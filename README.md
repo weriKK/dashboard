@@ -10,7 +10,7 @@ My Personal Home Page
 5. Simple but secure login to allow:
    1. Move RSS feeds between columns via drag&drop
    2. Adding/removing/resizing colums
-   3. Adding/removing/configuring RSS feeds	
+   3. Adding/removing/configuring RSS feeds
 
 6. Centralized logging, monitoring, analytics
 
