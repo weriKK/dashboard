@@ -70,7 +70,7 @@ func (db *inMemoryFeedRepository) initializeWithData() {
 	db.add(&entry{"MMO-Champion", "http://www.mmo-champion.com/external.php?do=rss&type=newcontent&sectionid=1&days=120&count=20", 10})
 	db.add(&entry{"Reddit - Games", "https://www.reddit.com/r/Games/.rss", 10})
 	db.add(&entry{"Programming Praxis", "https://programmingpraxis.com/feed/", 10})
-	db.add(&entry{"Handmade Hero", "https://www.youtube.com/feeds/videos.xml&user=handmadeheroarchive", 10})
+	db.add(&entry{"Handmade Hero", "https://www.youtube.com/feeds/videos.xml?channel_id=UCaTznQhurW5AaiYPbhEA-KA", 10})
 	db.add(&entry{"GiantBomb", "http://www.giantbomb.com/feeds/mashup/", 10})
 	db.add(&entry{"RockPaperShotgun", "http://feeds.feedburner.com/RockPaperShotgun", 10})
 	db.add(&entry{"Shacknews", "http://www.shacknews.com/rss?recent_articles=1", 10})
