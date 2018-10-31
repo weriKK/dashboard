@@ -1,8 +1,9 @@
 package application
 
 type FeedIdList struct {
-	Id   int
-	Name string
+	Id     int
+	Name   string
+	Column int
 }
 
 func GetFeedIdList() ([]FeedIdList, error) {
@@ -13,7 +14,7 @@ func GetFeedIdList() ([]FeedIdList, error) {
 	feedInfo := []FeedIdList{}
 
 	for _, v := range feeds {
-		feedInfo = append(feedInfo, FeedIdList{v.Id(), v.Name()})
+		feedInfo = append(feedInfo, FeedIdList{v.Id(), v.Name(), v.Column()})
 	}
 
 	return feedInfo, nil

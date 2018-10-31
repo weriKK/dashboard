@@ -1,19 +1,19 @@
 package application
 
 import "github.com/mmcdole/gofeed"
-import "log"
 
 type FeedItem struct {
-	Title   string
-	Url     string
-	Content string
+	Title       string
+	Url         string
+	Description string
 }
 
 type FeedContent struct {
-	Id    int
-	Name  string
-	Url   string
-	Items []FeedItem
+	Id     int
+	Name   string
+	Url    string
+	Column int
+	Items  []FeedItem
 }
 
 func GetFeedContent(id int) (*FeedContent, error) {
@@ -31,6 +31,6 @@ func GetFeedContent(id int) (*FeedContent, error) {
 		items = append(items, FeedItem{v.Title, v.Link, v.Description})
 	}
 
-	content := FeedContent{feed.Id(), parsed.Title, feed.Url(), items}
+	content := FeedContent{feed.Id(), parsed.Title, feed.Url(), feed.Column(), items}
 	return &content, nil
 }

@@ -15,8 +15,9 @@ type jsonFeedList struct {
 }
 
 type jsonFeedListItem struct {
-	Name string
-	Url  string
+	Name   string
+	Url    string
+	Column int
 }
 
 type jsonFeed struct {
@@ -27,9 +28,9 @@ type jsonFeed struct {
 }
 
 type jsonFeedItem struct {
-	Title   string
-	Url     string
-	Content string
+	Title       string
+	Url         string
+	Description string
 }
 
 func webFeedListHandler(w http.ResponseWriter, r *http.Request) {
@@ -38,7 +39,7 @@ func webFeedListHandler(w http.ResponseWriter, r *http.Request) {
 
 	payload := jsonFeedList{len(feedList), []jsonFeedListItem{}}
 	for _, v := range feedList {
-		payload.Feeds = append(payload.Feeds, jsonFeedListItem{v.Name, fmt.Sprintf("http://%s%s/%d", r.Host, r.URL, v.Id)})
+		payload.Feeds = append(payload.Feeds, jsonFeedListItem{v.Name, fmt.Sprintf("http://%s%s/%d", r.Host, r.URL, v.Id), v.Column})
 	}
 
 	w.Header().Set("Content-Type", "application/json")
@@ -56,7 +57,7 @@ func webFeedContentHandler(w http.ResponseWriter, r *http.Request) {
 
 	payload := jsonFeed{feedContent.Id, feedContent.Name, feedContent.Url, []jsonFeedItem{}}
 	for _, v := range feedContent.Items {
-		payload.Items = append(payload.Items, jsonFeedItem{v.Title, v.Url, v.Content})
+		payload.Items = append(payload.Items, jsonFeedItem{v.Title, v.Url, v.Description})
 	}
 
 	w.Header().Set("Content-Type", "application/json")
@@ -76,16 +77,3 @@ func NewRestHttpServer(addr string) *http.Server {
 
 	return s
 }
-
-/*
-[
-	{
-		"name": "MMO Champion"
-		"url": "http://localhost:8080/webfeeds/mmochampion"
-	},
-	{
-		"name": "GiantBomb"
-		"url": "http://localhost:8080/webfeeds/giantbomb"
-	}
-]
-*/

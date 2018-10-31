@@ -1,0 +1,106 @@
+* {
+  box-sizing: border-box;
+}
+body {
+  background: #33363d;
+  color: white;
+  font-family: "Lato";
+  font-weight: 300;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+ul {
+  list-style-type: none;
+  margin: 0;
+  padding: 0;
+}
+#root {
+  margin: 20px auto;
+}
+#columns {
+  display: flex;
+  align-items: flex-start;
+}
+.column {
+  flex: 1;
+  margin: 0 10px;
+  position: relative;
+  background: rgba(0, 0, 0, 0.2);
+  overflow: hidden;
+}
+@media (max-width: 690px) {
+  #columns {
+    display: block;
+  }
+  .column {
+    margin-bottom: 30px;
+  }
+}
+.drag-item h2 {
+  font-size: 0.8rem;
+  margin: 0;
+  text-transform: uppercase;
+  font-weight: 600;
+}
+.column-red .drag-item-header, .column-red .is-moved {
+  background: #fb7d44;
+}
+.column-blue .drag-item-header, .column-blue .is-moved {
+  background: #2a92bf;
+}
+.column-green .drag-item-header, .column-green .is-moved {
+  background: #00b961;
+}
+.column-yellow .drag-item-header, .column-yellow .is-moved {
+  background: #f4ce46;
+}
+.column-red .drag-item li::before {
+  color: #fb7d44;
+}
+.column-blue .drag-item li::before {
+  color: #2a92bf;
+}
+.column-green .drag-item li::before {
+  color: #00b961;
+}
+.column-yellow .drag-item li::before {
+  color: #f4ce46;
+}
+.drag-item-list {
+  min-height: 50px;
+}
+.drag-item {
+  margin: 10px;
+  padding: 5px;
+  min-height: 100px;
+  background: rgba(0, 0, 0, 0.4);
+  transition: all 0.3s cubic-bezier(0.23, 1, 0.32, 1);
+}
+.drag-item.is-moving {
+  transform: scale(1.0);
+  background: rgba(0, 0, 0, 0.8);
+}
+.drag-item.is-moving .drag-item-header {
+  background: darkgray;
+}
+.drag-item li::before {
+	content: "\25AA";
+	padding-right: 5px;
+}
+.drag-item a {
+	color: lightgray;
+	text-decoration: none;
+}
+.drag-item a:hover {
+  text-decoration: underline;
+}
+.drag-item-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 5px;
+}
+/* Dragula CSS override */
+.gu-mirror {
+  list-style-type: none;
+}
