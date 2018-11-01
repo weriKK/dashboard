@@ -1,6 +1,8 @@
 package application
 
-import "github.com/mmcdole/gofeed"
+import (
+	"github.com/mmcdole/gofeed"
+)
 
 type FeedItem struct {
 	Title       string
@@ -17,13 +19,13 @@ type FeedContent struct {
 }
 
 func min(a, b int) int {
-    if a < b {
-        return a
-    }
-    return b
+	if a < b {
+		return a
+	}
+	return b
 }
 
-func GetFeedContent(id int) (*FeedContent, error) {
+func GetFeedContent(id int, limit int) (*FeedContent, error) {
 
 	feed, _ := appdb.GetById(id)
 
@@ -33,14 +35,18 @@ func GetFeedContent(id int) (*FeedContent, error) {
 		panic(err)
 	}
 
-	items := []FeedItem{}
-	for _, v := range parsed.Items {
-		items = append(items, FeedItem{v.Title, v.Link, v.Description})
+	if limit == 0 {
+		limit = len(parsed.Items)
 	}
 
-	// TODO: this is a hack, fix the API so returned items can be limited/configured
-	limitItemsLength := min(len(items), 8)
+	limit = min(limit, len(parsed.Items))
 
-	content := FeedContent{feed.Id(), parsed.Title, feed.Url(), feed.Column(), items[:limitItemsLength]}
+	items := []FeedItem{}
+	for itemIdx := 0; itemIdx < limit; itemIdx++ {
+		p := parsed.Items[itemIdx]
+		items = append(items, FeedItem{p.Title, p.Link, p.Description})
+	}
+
+	content := FeedContent{feed.Id(), parsed.Title, feed.Url(), feed.Column(), items}
 	return &content, nil
 }

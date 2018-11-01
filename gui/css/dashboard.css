@@ -44,15 +44,19 @@ ul {
 }
 .column-red .drag-item-header, .column-red .is-moved {
   background: #fb7d44;
+  color: #000036;
 }
 .column-blue .drag-item-header, .column-blue .is-moved {
-  background: #2a92bf;
+  background: #4BA6CD;
+  color: #000036;
 }
 .column-green .drag-item-header, .column-green .is-moved {
   background: #00b961;
+  color: #000036;
 }
 .column-yellow .drag-item-header, .column-yellow .is-moved {
   background: #f4ce46;
+  color: #000000;
 }
 .column-red .drag-item li::before {
   color: #fb7d44;
@@ -88,7 +92,7 @@ ul {
 	padding-right: 5px;
 }
 .drag-item a {
-	color: lightgray;
+	color: #ececec;
 	text-decoration: none;
 }
 .drag-item a:hover {

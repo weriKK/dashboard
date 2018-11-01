@@ -3,11 +3,11 @@ package infrastructure
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/weriKK/dashboard/application"
 	"net/http"
 	"strconv"
-	"strings"
+
 	"github.com/rs/cors"
+	"github.com/weriKK/dashboard/application"
 )
 
 type jsonFeedList struct {
@@ -16,10 +16,11 @@ type jsonFeedList struct {
 }
 
 type jsonFeedListItem struct {
-	Name   		string
-	Url    		string
-	Resource 	string
-	Column 		int
+	Name      string
+	Url       string
+	Resource  string
+	Column    int
+	ItemLimit int
 }
 
 type jsonFeed struct {
@@ -41,19 +42,27 @@ func webFeedListHandler(w http.ResponseWriter, r *http.Request) {
 
 	payload := jsonFeedList{len(feedList), []jsonFeedListItem{}}
 	for _, v := range feedList {
-		payload.Feeds = append(payload.Feeds, jsonFeedListItem{v.Name, v.Url, fmt.Sprintf("http://%s%s/%d", r.Host, r.URL, v.Id), v.Column})
+		payload.Feeds = append(payload.Feeds, jsonFeedListItem{v.Name, v.Url, fmt.Sprintf("http://%s%s/%d", r.Host, r.URL, v.Id), v.Column, v.ItemLimit})
 	}
 	writeJSONPayload(w, payload)
 }
 
 func webFeedContentHandler(w http.ResponseWriter, r *http.Request) {
 
-	// Todo: this is a huge injection vulnerability issue here
-	id, err := strconv.Atoi(r.URL.Path[strings.Index(r.URL.Path[1:], "/")+2:])
+	parsed, err := parseUrl(r.URL)
 	if err != nil {
 		panic(err)
 	}
-	feedContent, _ := application.GetFeedContent(id)
+
+	id, err := strconv.Atoi(parsed.LastPath)
+	if err != nil {
+		panic(err)
+	}
+
+	// if error, limit is set to 0
+	limit, err := parsed.getLimitQueryParam()
+
+	feedContent, _ := application.GetFeedContent(id, limit)
 
 	payload := jsonFeed{feedContent.Id, feedContent.Name, feedContent.Url, []jsonFeedItem{}}
 	for _, v := range feedContent.Items {
@@ -74,8 +83,8 @@ func NewRestHttpServer(addr string) *http.Server {
 	mux.HandleFunc("/webfeeds/", webFeedContentHandler) // Trailing '/' is a different subtree, /webfeeds/{id} will comehere
 
 	c := cors.New(cors.Options{
-		AllowedOrigins: []string{"*"},
-		AllowedMethods: []string{"GET", "POST", "DELETE"},
+		AllowedOrigins:   []string{"*"},
+		AllowedMethods:   []string{"GET", "POST", "DELETE"},
 		AllowCredentials: true,
 	})
 
