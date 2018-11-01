@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"strconv"
 	"strings"
+	"github.com/rs/cors"
 )
 
 type jsonFeedList struct {
@@ -15,9 +16,10 @@ type jsonFeedList struct {
 }
 
 type jsonFeedListItem struct {
-	Name   string
-	Url    string
-	Column int
+	Name   		string
+	Url    		string
+	Resource 	string
+	Column 		int
 }
 
 type jsonFeed struct {
@@ -39,16 +41,14 @@ func webFeedListHandler(w http.ResponseWriter, r *http.Request) {
 
 	payload := jsonFeedList{len(feedList), []jsonFeedListItem{}}
 	for _, v := range feedList {
-		payload.Feeds = append(payload.Feeds, jsonFeedListItem{v.Name, fmt.Sprintf("http://%s%s/%d", r.Host, r.URL, v.Id), v.Column})
+		payload.Feeds = append(payload.Feeds, jsonFeedListItem{v.Name, v.Url, fmt.Sprintf("http://%s%s/%d", r.Host, r.URL, v.Id), v.Column})
 	}
-
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(payload)
-
+	writeJSONPayload(w, payload)
 }
 
 func webFeedContentHandler(w http.ResponseWriter, r *http.Request) {
 
+	// Todo: this is a huge injection vulnerability issue here
 	id, err := strconv.Atoi(r.URL.Path[strings.Index(r.URL.Path[1:], "/")+2:])
 	if err != nil {
 		panic(err)
@@ -59,7 +59,10 @@ func webFeedContentHandler(w http.ResponseWriter, r *http.Request) {
 	for _, v := range feedContent.Items {
 		payload.Items = append(payload.Items, jsonFeedItem{v.Title, v.Url, v.Description})
 	}
+	writeJSONPayload(w, payload)
+}
 
+func writeJSONPayload(w http.ResponseWriter, payload interface{}) {
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(payload)
 }
@@ -70,9 +73,15 @@ func NewRestHttpServer(addr string) *http.Server {
 	mux.HandleFunc("/webfeeds", webFeedListHandler)
 	mux.HandleFunc("/webfeeds/", webFeedContentHandler) // Trailing '/' is a different subtree, /webfeeds/{id} will comehere
 
+	c := cors.New(cors.Options{
+		AllowedOrigins: []string{"*"},
+		AllowedMethods: []string{"GET", "POST", "DELETE"},
+		AllowCredentials: true,
+	})
+
 	s := &http.Server{
 		Addr:    addr,
-		Handler: mux,
+		Handler: c.Handler(mux),
 	}
 
 	return s
