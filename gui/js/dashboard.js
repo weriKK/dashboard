@@ -64,7 +64,7 @@ class FeedBox extends React.Component {
 			let feedItems = [];
 			if ( this.state.items ) {
 			  feedItems = this.state.items.map((item) =>
-			    <FeedItem url={item.Url} title={item.Title} key={item.Url} />
+			    <FeedItem url={item.Url} title={item.Title} description={item.Description} published={item.Published} key={item.Url} />
 			  );
 			}
 		  return (
@@ -87,8 +87,41 @@ function FeedBoxHeader(props) {
 	);
 }
 
-function FeedItem(props) {
-  return <li><a href={props.url} target="_blank">{props.title}</a></li>;
+class FeedItem extends React.Component {
+	constructor(props) {
+		super(props);
+		this.state = {
+			url: props.url,
+			title: props.title,
+			description: props.description,
+			published: new Date(props.published)
+		}
+	}
+
+	__getClass() {
+		let now = new Date();
+		let age = Math.abs(now - this.state.published);
+		let day_ms = 24*60*60*1000;
+		let half_day_ms = day_ms * 0.5;
+
+		if (day_ms <= age) {
+			return "day_old";
+		}
+
+		if (half_day_ms <= age) {
+			return "half_day_old";
+		}
+
+		return "";
+	}
+
+	render() {
+		return (
+			<li>
+				<a className={this.__getClass()} href={this.state.url} target="_blank">{this.state.title}</a>
+			</li>
+		);
+	}
 }
 
 class App extends React.Component {

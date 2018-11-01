@@ -8,6 +8,7 @@ type FeedItem struct {
 	Title       string
 	Url         string
 	Description string
+	Published   string
 }
 
 type FeedContent struct {
@@ -44,7 +45,7 @@ func GetFeedContent(id int, limit int) (*FeedContent, error) {
 	items := []FeedItem{}
 	for itemIdx := 0; itemIdx < limit; itemIdx++ {
 		p := parsed.Items[itemIdx]
-		items = append(items, FeedItem{p.Title, p.Link, p.Description})
+		items = append(items, FeedItem{p.Title, p.Link, p.Description, p.Published})
 	}
 
 	content := FeedContent{feed.Id(), parsed.Title, feed.Url(), feed.Column(), items}

@@ -34,6 +34,7 @@ type jsonFeedItem struct {
 	Title       string
 	Url         string
 	Description string
+	Published   string
 }
 
 func webFeedListHandler(w http.ResponseWriter, r *http.Request) {
@@ -66,7 +67,7 @@ func webFeedContentHandler(w http.ResponseWriter, r *http.Request) {
 
 	payload := jsonFeed{feedContent.Id, feedContent.Name, feedContent.Url, []jsonFeedItem{}}
 	for _, v := range feedContent.Items {
-		payload.Items = append(payload.Items, jsonFeedItem{v.Title, v.Url, v.Description})
+		payload.Items = append(payload.Items, jsonFeedItem{v.Title, v.Url, v.Description, v.Published})
 	}
 	writeJSONPayload(w, payload)
 }
