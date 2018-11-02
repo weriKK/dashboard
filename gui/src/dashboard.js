@@ -1,5 +1,7 @@
 'use struct';
 
+import { myConfig } from "./config.js";
+
 function Column(props) {
 	return (
     <li className={"column column-" + props.color}>
@@ -205,7 +207,7 @@ class App extends React.Component {
 
 	__fetchRSSFeeds() {
 			//console.log("Fetching feeds...");
-			fetch('http://localhost:8888/webfeeds')
+			fetch(myConfig.API_URI)
 				.then(response => response.json())
 				.then(respData => {
 					const feeds = respData.Feeds;
