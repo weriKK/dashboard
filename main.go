@@ -10,6 +10,6 @@ import (
 func main() {
 	application.Init(infrastructure.NewInMemoryFeedRepository())
 
-	restApiServer := infrastructure.NewRestHttpServer(":8888")
+	restApiServer := infrastructure.NewRestHttpServer(":8080")
 	log.Fatal(restApiServer.ListenAndServe())
 }
