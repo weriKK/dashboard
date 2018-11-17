@@ -12,4 +12,4 @@ FROM alpine:latest
 WORKDIR /root
 COPY --from=builder /go/src/github.com/weriKK/dashboard/dashboard .
 
-CMD ["/bin/sh", "/root/dockerStartup.sh"]
+CMD ["./dashboard"]
