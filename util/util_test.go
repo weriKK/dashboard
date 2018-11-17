@@ -1,4 +1,4 @@
-package infrastructure
+package util
 
 import (
 	"net/url"
@@ -13,17 +13,17 @@ func TestGetLimitQueryParam(t *testing.T) {
 	NO_LIMIT_PARAM := -1
 	LIMIT_NOT_A_NUMBER := -2
 	tests := []struct {
-		p     parsedUrlInfo
+		p     ParsedUrlInfo
 		limit int
 	}{
-		{parsedUrlInfo{"", "", map[string][]string{}}, NO_LIMIT_PARAM},
-		{parsedUrlInfo{"", "", map[string][]string{"limit": []string{}}}, NO_LIMIT_PARAM},
-		{parsedUrlInfo{"", "", map[string][]string{"limit": []string{"duck", "cow"}}}, LIMIT_NOT_A_NUMBER},
-		{parsedUrlInfo{"", "", map[string][]string{"limit": []string{"10", "20", "30"}}}, 10},
+		{ParsedUrlInfo{"", "", map[string][]string{}}, NO_LIMIT_PARAM},
+		{ParsedUrlInfo{"", "", map[string][]string{"limit": []string{}}}, NO_LIMIT_PARAM},
+		{ParsedUrlInfo{"", "", map[string][]string{"limit": []string{"duck", "cow"}}}, LIMIT_NOT_A_NUMBER},
+		{ParsedUrlInfo{"", "", map[string][]string{"limit": []string{"10", "20", "30"}}}, 10},
 	}
 
 	for idx, test := range tests {
-		u, err := test.p.getLimitQueryParam()
+		u, err := test.p.GetLimitQueryParam()
 
 		if test.limit == NO_LIMIT_PARAM || test.limit == LIMIT_NOT_A_NUMBER {
 			if u != 0 || !is_set(err) {
@@ -69,7 +69,7 @@ func TestParseURL(t *testing.T) {
 	}
 
 	for _, test := range tests {
-		u, err := parseUrl(test.url)
+		u, err := ParseUrl(test.url)
 		if err != nil {
 			t.Errorf("Parsing of '%v' failed: %v", test.url, err)
 		}

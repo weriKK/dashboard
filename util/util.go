@@ -1,4 +1,4 @@
-package infrastructure
+package util
 
 import (
 	"errors"
@@ -7,13 +7,13 @@ import (
 	"strings"
 )
 
-type parsedUrlInfo struct {
+type ParsedUrlInfo struct {
 	Path     string
 	LastPath string
 	Query    map[string][]string
 }
 
-func (p parsedUrlInfo) getLimitQueryParam() (int, error) {
+func (p ParsedUrlInfo) GetLimitQueryParam() (int, error) {
 
 	_, ok := p.Query["limit"]
 	if !ok || len(p.Query["limit"]) < 1 {
@@ -25,13 +25,13 @@ func (p parsedUrlInfo) getLimitQueryParam() (int, error) {
 		return 0, err
 	}
 
-	return limit, err
+	return limit, nil
 }
 
-func parseUrl(url *url.URL) (*parsedUrlInfo, error) {
+func ParseUrl(url *url.URL) (*ParsedUrlInfo, error) {
 	lastPath := url.Path[strings.Index(url.Path[1:], "/")+2:]
 	q := url.Query()
 
-	parsedInfo := parsedUrlInfo{url.Path, lastPath, q}
+	parsedInfo := ParsedUrlInfo{url.Path, lastPath, q}
 	return &parsedInfo, nil
 }

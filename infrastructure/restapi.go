@@ -3,11 +3,14 @@ package infrastructure
 import (
 	"encoding/json"
 	"fmt"
+	"log"
 	"net/http"
 	"strconv"
 
 	"github.com/rs/cors"
 	"github.com/weriKK/dashboard/application"
+	"github.com/weriKK/dashboard/util"
+	"github.com/weriKK/dashboard/util/logger"
 )
 
 type jsonFeedList struct {
@@ -50,18 +53,18 @@ func webFeedListHandler(w http.ResponseWriter, r *http.Request) {
 
 func webFeedContentHandler(w http.ResponseWriter, r *http.Request) {
 
-	parsed, err := parseUrl(r.URL)
+	parsed, err := util.ParseUrl(r.URL)
 	if err != nil {
-		panic(err)
+		log.Panic(err)
 	}
 
 	id, err := strconv.Atoi(parsed.LastPath)
 	if err != nil {
-		panic(err)
+		log.Panic(err)
 	}
 
 	// if error, limit is set to 0
-	limit, err := parsed.getLimitQueryParam()
+	limit, err := parsed.GetLimitQueryParam()
 
 	feedContent, _ := application.GetFeedContent(id, limit)
 
@@ -91,7 +94,7 @@ func NewRestHttpServer(addr string) *http.Server {
 
 	s := &http.Server{
 		Addr:    addr,
-		Handler: c.Handler(mux),
+		Handler: logger.Handler(c.Handler(mux)),
 	}
 
 	return s

@@ -2,6 +2,7 @@ package application
 
 import (
 	"github.com/mmcdole/gofeed"
+	log "github.com/weriKK/dashboard/util/logger"
 )
 
 type FeedItem struct {
@@ -33,7 +34,7 @@ func GetFeedContent(id int, limit int) (*FeedContent, error) {
 	feedParser := gofeed.NewParser()
 	parsed, err := feedParser.ParseURL(feed.Rss())
 	if err != nil {
-		panic(err)
+		log.Panicf("Exception while trying to parse RSS feed URL '%v': %v", feed.Rss(), err)
 	}
 
 	if limit == 0 {
