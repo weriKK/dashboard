@@ -12,12 +12,12 @@ func Handler(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		start := time.Now()
 
-		Infof("(%s) \"%s %s %s\"", r.RemoteAddr, r.Method, r.RequestURI, r.Proto)
+		Infof("(%s)   > %s %s %s", r.RemoteAddr, r.Method, r.RequestURI, r.Proto)
 
 		crw := newCustomResponseWriter(w)
 		next.ServeHTTP(crw, r)
 
-		Infof("(%s) \"%s %s %s\" %d %d %s", r.RemoteAddr, r.Method, r.RequestURI, r.Proto, crw.status, crw.size, time.Since(start))
+		Infof("(%s) <   %d %d %s", r.RemoteAddr, crw.status, crw.size, time.Since(start))
 	})
 }
 
