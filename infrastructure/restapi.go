@@ -46,7 +46,7 @@ func webFeedListHandler(w http.ResponseWriter, r *http.Request) {
 
 	payload := jsonFeedList{len(feedList), []jsonFeedListItem{}}
 	for _, v := range feedList {
-		payload.Feeds = append(payload.Feeds, jsonFeedListItem{v.Name, v.Url, fmt.Sprintf("http://%s%s/%d", r.Host, r.URL, v.Id), v.Column, v.ItemLimit})
+		payload.Feeds = append(payload.Feeds, jsonFeedListItem{v.Name, v.Url, fmt.Sprintf("https://%s%s/%d", r.Host, r.URL, v.Id), v.Column, v.ItemLimit})
 	}
 	writeJSONPayload(w, payload)
 }
