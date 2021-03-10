@@ -25,8 +25,8 @@ steps:
     runOptions: 'commands'
     commands: |
       docker ps -f name=dashboard-backend    
-      docker pull kovadocker/dashboard-backend:$(BuildID)
+      docker pull kovadocker/dashboard-backend:${{ BuildID }}
       docker stop dashboard-backend
       docker rm dashboard-backend
-      docker run --name=dashboard-backend --restart=always -p 8888:8080 -d kovadocker/dashboard-backend:$(BuildID)
+      docker run --name=dashboard-backend --restart=always -p 8888:8080 -d kovadocker/dashboard-backend:${{ BuildID }}
     readyTimeout: '20000'
