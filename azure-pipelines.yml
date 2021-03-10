@@ -27,10 +27,11 @@ steps:
     Dockerfile: '**/Dockerfile'
     
 - task: SSH@0
+  displayName: Deploy
   inputs:
     sshEndpoint: 'SSH - werik.com  - azuredevops'
     runOptions: 'commands'
     commands: |
-      echo ${{ kovadocker.username }}
+      echo $(DOCKERUSER)
       echo hello
     readyTimeout: '20000'
