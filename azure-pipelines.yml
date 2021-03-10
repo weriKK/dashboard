@@ -17,9 +17,20 @@ steps:
     echo Add other tasks to build, test, and deploy your project.
     echo See https://aka.ms/yaml
   displayName: 'Run a multi-line script'
+
 - task: Docker@2
+  displayName: 'Build and Push to Docker Hub'
   inputs:
     containerRegistry: 'Docker Hub - kovadocker'
     repository: 'kovadocker/dashboard-backend'
     command: 'buildAndPush'
     Dockerfile: '**/Dockerfile'
+    
+- task: SSH@0
+  inputs:
+    sshEndpoint: 'SSH - werik.com  - azuredevops'
+    runOptions: 'commands'
+    commands: |
+      echo ${{ kovadocker.username }}
+      echo hello
+    readyTimeout: '20000'
