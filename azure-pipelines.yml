@@ -19,5 +19,7 @@ steps:
   displayName: 'Run a multi-line script'
 - task: Docker@2
   inputs:
-    command: 'build'
+    containerRegistry: 'Docker Hub - kovadocker'
+    repository: 'kovadocker/dashboard-backend'
+    command: 'buildAndPush'
     Dockerfile: '**/Dockerfile'
