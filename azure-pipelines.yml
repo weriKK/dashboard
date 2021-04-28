@@ -4,7 +4,8 @@
 # https://aka.ms/yaml
 
 trigger:
-- master
+#- master
+- '*'
 
 pool:
   vmImage: ubuntu-latest
@@ -20,6 +21,7 @@ steps:
     
 - task: SSH@0
   displayName: Deploy
+  condition: eq(variables['Build.SourceBranch'], 'refs/heads/master')
   inputs:
     sshEndpoint: 'SSH - werik.com  - azuredevops'
     runOptions: 'script'
