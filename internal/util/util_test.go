@@ -17,9 +17,9 @@ func TestGetLimitQueryParam(t *testing.T) {
 		limit int
 	}{
 		{ParsedUrlInfo{"", "", map[string][]string{}}, NO_LIMIT_PARAM},
-		{ParsedUrlInfo{"", "", map[string][]string{"limit": []string{}}}, NO_LIMIT_PARAM},
-		{ParsedUrlInfo{"", "", map[string][]string{"limit": []string{"duck", "cow"}}}, LIMIT_NOT_A_NUMBER},
-		{ParsedUrlInfo{"", "", map[string][]string{"limit": []string{"10", "20", "30"}}}, 10},
+		{ParsedUrlInfo{"", "", map[string][]string{"limit": {}}}, NO_LIMIT_PARAM},
+		{ParsedUrlInfo{"", "", map[string][]string{"limit": {"duck", "cow"}}}, LIMIT_NOT_A_NUMBER},
+		{ParsedUrlInfo{"", "", map[string][]string{"limit": {"10", "20", "30"}}}, 10},
 	}
 
 	for idx, test := range tests {

@@ -1,14 +1,14 @@
 package application
 
 import (
-	"github.com/mmcdole/gofeed"
+	"dashboard/internal/util"
 	log "dashboard/internal/util/logger"
 )
 
 type FeedItem struct {
-	Title       string
-	Url         string
-	Published   string
+	Title     string
+	Url       string
+	Published string
 }
 
 type FeedContent struct {
@@ -30,7 +30,7 @@ func GetFeedContent(id int, limit int) (*FeedContent, error) {
 
 	feed, _ := appdb.GetById(id)
 
-	feedParser := gofeed.NewParser()
+	feedParser := util.NewFeedParser()
 	parsed, err := feedParser.ParseURL(feed.Rss())
 	if err != nil {
 		log.Panicf("Exception while trying to parse RSS feed URL '%v': %v", feed.Rss(), err)
