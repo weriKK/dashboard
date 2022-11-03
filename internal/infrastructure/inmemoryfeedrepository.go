@@ -5,7 +5,7 @@ import (
 	"sort"
 	"sync"
 
-	"github.com/weriKK/dashboard/domain/feed"
+	"dashboard/internal/domain/feed"
 )
 
 type entry struct {

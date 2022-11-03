@@ -1,9 +1,10 @@
-FROM golang:1.11.1 as builder
+FROM golang:1.19.3 as builder
 
-RUN go get -d -v github.com/weriKK/dashboard
-WORKDIR /go/src/github.com/weriKK/dashboard
-COPY . /go/src/github.com/weriKK/dashboard/
-RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o dashboard .
+WORKDIR /build
+COPY . /build/
+
+RUN go mod download
+RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o /build/out/dashboard .
 
 
 
@@ -12,6 +13,6 @@ FROM alpine:latest
 RUN apk --no-cache add ca-certificates
 
 WORKDIR /root
-COPY --from=builder /go/src/github.com/weriKK/dashboard/dashboard .
+COPY --from=builder /build/out/dashboard .
 
 CMD ["./dashboard"]

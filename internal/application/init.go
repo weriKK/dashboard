@@ -1,7 +1,7 @@
 package application
 
 import (
-	"github.com/weriKK/dashboard/domain/feed"
+	"dashboard/internal/domain/feed"
 )
 
 var appdb feed.FeedRepository

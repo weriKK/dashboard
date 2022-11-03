@@ -2,13 +2,12 @@ package application
 
 import (
 	"github.com/mmcdole/gofeed"
-	log "github.com/weriKK/dashboard/util/logger"
+	log "dashboard/internal/util/logger"
 )
 
 type FeedItem struct {
 	Title       string
 	Url         string
-	Description string
 	Published   string
 }
 
@@ -46,7 +45,7 @@ func GetFeedContent(id int, limit int) (*FeedContent, error) {
 	items := []FeedItem{}
 	for itemIdx := 0; itemIdx < limit; itemIdx++ {
 		p := parsed.Items[itemIdx]
-		items = append(items, FeedItem{p.Title, p.Link, p.Description, p.Published})
+		items = append(items, FeedItem{p.Title, p.Link, p.Published})
 	}
 
 	content := FeedContent{feed.Id(), parsed.Title, feed.Url(), feed.Column(), items}

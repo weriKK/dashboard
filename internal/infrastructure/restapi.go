@@ -8,9 +8,9 @@ import (
 	"strconv"
 
 	"github.com/rs/cors"
-	"github.com/weriKK/dashboard/application"
-	"github.com/weriKK/dashboard/util"
-	"github.com/weriKK/dashboard/util/logger"
+	"dashboard/internal/application"
+	"dashboard/internal/util"
+	"dashboard/internal/util/logger"
 )
 
 type jsonFeedList struct {
@@ -36,7 +36,6 @@ type jsonFeed struct {
 type jsonFeedItem struct {
 	Title       string
 	Url         string
-	Description string
 	Published   string
 }
 
@@ -70,7 +69,7 @@ func webFeedContentHandler(w http.ResponseWriter, r *http.Request) {
 
 	payload := jsonFeed{feedContent.Id, feedContent.Name, feedContent.Url, []jsonFeedItem{}}
 	for _, v := range feedContent.Items {
-		payload.Items = append(payload.Items, jsonFeedItem{v.Title, v.Url, v.Description, v.Published})
+		payload.Items = append(payload.Items, jsonFeedItem{v.Title, v.Url, v.Published})
 	}
 	writeJSONPayload(w, payload)
 }
