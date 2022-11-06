@@ -61,15 +61,26 @@ func (f *Feed) GetFeedHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+type cachedItem struct {
+	items []feedItemModel
+	err   error
+}
+
 func (f *Feed) fetchFeedItems(id int) ([]feedItemModel, error) {
 
 	cacheKey := strconv.Itoa(id)
+
 	if cachedItems, found := f.feedCache.Get(cacheKey); found {
-		return cachedItems.([]feedItemModel), nil
+		ci := cachedItems.(cachedItem)
+		if ci.err != nil {
+			return nil, fmt.Errorf("cached attempt to fetch feed failed. retrying when cache expires: %w", ci.err)
+		}
+		return ci.items, nil
 	}
 
 	body, err := getFeedFromURL(f.configuredFeeds[id].FeedLink)
 	if err != nil {
+		f.feedCache.Set(cacheKey, cachedItem{items: nil, err: err}, cache.DefaultExpiration)
 		return nil, err
 	}
 
@@ -77,7 +88,9 @@ func (f *Feed) fetchFeedItems(id int) ([]feedItemModel, error) {
 
 	parsed, err := p.ParseString(string(body))
 	if err != nil {
-		return nil, fmt.Errorf("failed to parse feed: %w", err)
+		emsg := fmt.Errorf("failed to parse feed: %w", err)
+		f.feedCache.Set(cacheKey, cachedItem{items: nil, err: emsg}, cache.DefaultExpiration)
+		return nil, emsg
 	}
 
 	limit := int(math.Min(float64(f.configuredFeeds[id].ItemLimit), float64(len(parsed.Items))))
@@ -91,7 +104,6 @@ func (f *Feed) fetchFeedItems(id int) ([]feedItemModel, error) {
 		})
 	}
 
-	f.feedCache.Set(cacheKey, items, cache.DefaultExpiration)
-
+	f.feedCache.Set(cacheKey, cachedItem{items: items, err: nil}, cache.DefaultExpiration)
 	return items, nil
 }

@@ -29,14 +29,14 @@ func getFeedFromURL(link string) ([]byte, error) {
 
 	defer resp.Body.Close()
 
+	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
+		respDump, _ := httputil.DumpResponse(resp, true)
+		return nil, fmt.Errorf("received error from feed server:\n%s", string(respDump))
+	}
+
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return nil, fmt.Errorf("failed to read fetch body: %w", err)
-	}
-
-	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
-		emsg, _ := httputil.DumpResponse(resp, true)
-		return nil, fmt.Errorf("received error from feed server:\n%s", string(emsg))
 	}
 
 	return body, nil
