@@ -1,0 +1,42 @@
+feeds:
+  - title: "MMO-Champion"
+    webLink: "https://www.mmo-champion.com"
+    feedLink: "https://www.mmo-champion.com/external.php?do=rss&type=newcontent&sectionid=1&days=120&count=20"
+    columnId: 0
+    itemLimit: 5
+
+  - title: "Reddit - Games"
+    webLink: "https://www.reddit.com/r/Games/"
+    feedLink: "https://www.reddit.com/r/Games/.rss"
+    columnId: 0
+    itemLimit: 12
+
+  - title: "RockPaperShotgun"
+    webLink: "https://www.rockpapershotgun.com"
+    feedLink: "https://feeds.feedburner.com/RockPaperShotgun"
+    columnId: 0
+    itemLimit: 5
+
+  - title: "Bluenews"
+    webLink: "https://www.bluesnews.com"
+    feedLink: "https://www.bluesnews.com/news/news_1_0.rdf"
+    columnId: 0
+    itemLimit: 8
+
+  - title: "Jason Schreier"
+    webLink: "https://www.bloomberg.com/authors/AUvqMRVAZCw/jason-schreier"
+    feedLink: "https://www.bloomberg.com/authors/AUvqMRVAZCw/jason-schreier.rss"
+    columnId: 1
+    itemLimit: 10
+
+  - title: "ArsTechnica"
+    webLink: "https://arstechnica.com"
+    feedLink: "https://feeds.arstechnica.com/arstechnica/index"
+    columnId: 2
+    itemLimit: 10
+    
+  - title: "Y Combinator"
+    webLink: "https://news.ycombinator.com"
+    feedLink: "https://news.ycombinator.com/rss"
+    columnId: 2
+    itemLimit: 20

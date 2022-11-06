@@ -3,8 +3,10 @@ module dashboard
 go 1.19
 
 require (
+	github.com/gorilla/mux v1.8.0
 	github.com/mmcdole/gofeed v1.1.3
-	github.com/rs/cors v1.8.2
+	github.com/patrickmn/go-cache v2.1.0+incompatible
+	gopkg.in/yaml.v3 v3.0.1
 )
 
 require (
