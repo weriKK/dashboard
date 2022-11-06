@@ -15,6 +15,6 @@ type Feed struct {
 func New() *Feed {
 	return &Feed{
 		configuredFeeds: config.GetFeedConfig(),
-		feedCache:       cache.New(1*time.Minute, 10*time.Minute),
+		feedCache:       cache.New(5*time.Minute, 10*time.Minute),
 	}
 }
