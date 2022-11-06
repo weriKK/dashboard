@@ -25,7 +25,7 @@ func (f *Feed) GetFeedListHandler(w http.ResponseWriter, r *http.Request) {
 		payload.Feeds = append(payload.Feeds, feedListItemModel{
 			Name:     feed.Title,
 			Url:      feed.WebLink,
-			Resource: fmt.Sprintf("https://%s/webfeeds/%d", r.Host, i),
+			Resource: fmt.Sprintf("%s//%s/webfeeds/%d", r.URL.Scheme, r.Host, i),
 			Column:   feed.ColumnId,
 		})
 	}

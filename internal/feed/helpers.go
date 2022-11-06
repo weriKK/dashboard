@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"net/http/httputil"
 )
 
 func getFeedFromURL(link string) ([]byte, error) {
@@ -34,7 +35,8 @@ func getFeedFromURL(link string) ([]byte, error) {
 	}
 
 	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
-		return nil, fmt.Errorf("received error from feed server: %s", string(body))
+		emsg, _ := httputil.DumpResponse(resp, true)
+		return nil, fmt.Errorf("received error from feed server:\n%s", string(emsg))
 	}
 
 	return body, nil

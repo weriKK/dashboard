@@ -42,7 +42,7 @@ func (f *Feed) GetFeedHandler(w http.ResponseWriter, r *http.Request) {
 	feedItems, err := f.fetchFeedItems(id)
 	if err != nil {
 		log.Println(err)
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		http.Error(w, "failed to fetch feed items", http.StatusInternalServerError)
 		return
 	}
 
