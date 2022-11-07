@@ -20,7 +20,7 @@ func getFeedFromURL(link string) ([]byte, error) {
 		return nil, fmt.Errorf("failed to create request: %w", err)
 	}
 
-	req.Header.Set("User-Agent", "dashboard-backend/1.0")
+	req.Header.Set("User-Agent", "MyDashboard")
 
 	resp, err := c.Do(req)
 	if err != nil {

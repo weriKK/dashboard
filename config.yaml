@@ -5,11 +5,11 @@ feeds:
     columnId: 0
     itemLimit: 5
 
-  # - title: "Reddit - Games"
-  #   webLink: "https://www.reddit.com/r/Games/"
-  #   feedLink: "https://www.reddit.com/r/Games/.rss"
-  #   columnId: 0
-  #   itemLimit: 12
+  - title: "Reddit - Games"
+    webLink: "https://www.reddit.com/r/Games/"
+    feedLink: "https://www.reddit.com/r/Games/.rss"
+    columnId: 0
+    itemLimit: 12
 
   - title: "RockPaperShotgun"
     webLink: "https://www.rockpapershotgun.com"
