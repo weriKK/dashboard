@@ -6,9 +6,11 @@ import (
 	"io"
 	"net/http"
 	"net/http/httputil"
+	"strconv"
+	"time"
 )
 
-func getFeedFromURL(link string) ([]byte, error) {
+func (f *Feed) getFeedFromURL(link string) ([]byte, error) {
 	c := &http.Client{
 		Transport: &http.Transport{
 			TLSClientConfig: &tls.Config{},
@@ -22,7 +24,7 @@ func getFeedFromURL(link string) ([]byte, error) {
 
 	req.Header.Set("User-Agent", "MyDashboard")
 
-	resp, err := c.Do(req)
+	resp, err := f.instrumentedDo(c.Do)(req)
 	if err != nil {
 		return nil, fmt.Errorf("failed to fetch feed: %w", err)
 	}
@@ -40,4 +42,20 @@ func getFeedFromURL(link string) ([]byte, error) {
 	}
 
 	return body, nil
+}
+
+func (f *Feed) instrumentedDo(next func(*http.Request) (*http.Response, error)) func(*http.Request) (*http.Response, error) {
+	return func(r *http.Request) (*http.Response, error) {
+		start := time.Now()
+
+		resp, err := next(r)
+
+		labelValues := []string{strconv.Itoa(resp.StatusCode), r.Method, r.Host, r.URL.Path}
+
+		f.feedOutgoingMetrics.ReqTotal.WithLabelValues(labelValues...).Inc()
+		f.feedOutgoingMetrics.ReqDurationMs.WithLabelValues(labelValues...).Observe(float64(time.Since(start).Milliseconds()))
+		f.feedOutgoingMetrics.RespSizeBytes.WithLabelValues(labelValues...).Observe(float64(r.ContentLength))
+
+		return resp, err
+	}
 }

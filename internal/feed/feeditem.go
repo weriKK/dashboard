@@ -78,7 +78,7 @@ func (f *Feed) fetchFeedItems(id int) ([]feedItemModel, error) {
 		return ci.items, nil
 	}
 
-	body, err := getFeedFromURL(f.configuredFeeds[id].FeedLink)
+	body, err := f.getFeedFromURL(f.configuredFeeds[id].FeedLink)
 	if err != nil {
 		f.feedCache.Set(cacheKey, cachedItem{items: nil, err: err}, cache.DefaultExpiration)
 		return nil, err

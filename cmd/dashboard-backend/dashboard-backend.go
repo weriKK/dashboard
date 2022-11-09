@@ -8,6 +8,7 @@ import (
 	"net/http"
 
 	"github.com/gorilla/mux"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
 func main() {
@@ -21,9 +22,12 @@ func main() {
 	r := mux.NewRouter()
 	r.HandleFunc("/webfeedlist", f.GetFeedListHandler).Methods(http.MethodGet)
 	r.HandleFunc("/webfeeds/{id:[0-9]+}", f.GetFeedHandler).Methods(http.MethodGet)
+	r.Handle("/metrics", promhttp.Handler())
 
-	c := wrappers.WithCORS(r)
-	l := wrappers.WithRequestLogger(c)
+	m := wrappers.NewMetrics("dashboard", "incoming")
+	r.Use(m.WithMetrics)
+	r.Use(wrappers.WithCORS)
+	r.Use(wrappers.WithRequestLogger)
 
-	log.Fatal(http.ListenAndServe(":8080", l))
+	log.Fatal(http.ListenAndServe(":8080", r))
 }
