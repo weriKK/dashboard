@@ -5,8 +5,10 @@ else
     exit 1 # terminate and indicate error
 fi
 
+docker network create --driver bridge mynet || true
+
 docker ps -f name=dashboard-backend    
 docker pull kovadocker/dashboard-backend:${BUILD_ID}
 docker stop dashboard-backend || true
 docker rm dashboard-backend || true
-docker run --name=dashboard-backend --restart=always -p 8888:8080 -d kovadocker/dashboard-backend:${BUILD_ID}
+docker run --name=dashboard-backend --restart=always --network=mynet -p 8888:8080 -d kovadocker/dashboard-backend:${BUILD_ID}
