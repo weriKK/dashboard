@@ -7,14 +7,19 @@ import (
 	"net/http"
 	"net/http/httputil"
 	"strconv"
+	"strings"
 	"time"
 )
 
 func (f *Feed) getFeedFromURL(link string) ([]byte, error) {
-	c := &http.Client{
-		Transport: &http.Transport{
-			TLSClientConfig: &tls.Config{},
-		},
+
+	c := &http.Client{}
+
+	// HACK: https://www.reddit.com/r/redditdev/comments/t8e8hc/getting_nothing_but_429_responses_when_using_go/
+	if strings.Contains(link, "reddit.com") {
+		c.Transport = &http.Transport{
+			TLSNextProto: map[string]func(authority string, c *tls.Conn) http.RoundTripper{},
+		}
 	}
 
 	req, err := http.NewRequest(http.MethodGet, link, nil)
