@@ -29,6 +29,12 @@ feeds:
     columnId: 1
     itemLimit: 10
 
+  - title: "Techdirt"
+    webLink: "https://www.techdirt.com"
+    feedLink: "https://www.techdirt.com/feed/"
+    columnId: 1
+    itemLimit: 10
+
   - title: "ArsTechnica"
     webLink: "https://arstechnica.com"
     feedLink: "https://feeds.arstechnica.com/arstechnica/index"
