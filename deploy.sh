@@ -5,7 +5,7 @@ else
     exit 1 # terminate and indicate error
 fi
 
-docker network create --driver bridge mynet || true
+docker network inspect mynet >/dev/null 2>&1 || docker network create --driver bridge mynet
 
 docker ps -f name=dashboard-backend    
 docker pull kovadocker/dashboard-backend:${BUILD_ID}
