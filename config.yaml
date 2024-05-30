@@ -27,13 +27,13 @@ feeds:
     webLink: "https://www.bloomberg.com/authors/AUvqMRVAZCw/jason-schreier"
     feedLink: "https://www.bloomberg.com/authors/AUvqMRVAZCw/jason-schreier.rss"
     columnId: 1
-    itemLimit: 10
+    itemLimit: 5
 
-  - title: "Techdirt"
-    webLink: "https://www.techdirt.com"
-    feedLink: "https://www.techdirt.com/feed/"
+  - title: "Techspot"
+    webLink: "https://www.techspot.com/"
+    feedLink: "https://www.techspot.com/backend.xml"
     columnId: 1
-    itemLimit: 10
+    itemLimit: 20
 
   - title: "ArsTechnica"
     webLink: "https://arstechnica.com"
