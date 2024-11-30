@@ -1,0 +1,51 @@
+name: Build and Deploy Dashboard
+
+on:
+  push:
+    branches:
+      - master
+
+env:
+  IMAGE_NAME: ${{ github.event.repository.name }}
+
+jobs:
+  build:
+    name: Build Docker Image
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Build Docker image
+        run: docker build -t ${{ secrets.DOCKER_HUB_USERNAME }}/${{ env.IMAGE_NAME }}:${{ github.run_number }} .
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_HUB_USERNAME }}
+          password: ${{ secrets.DOCKER_HUB_TOKEN }}
+
+      - name: Publish Docker image
+        run: docker push ${{ secrets.DOCKER_HUB_USERNAME }}/${{ env.IMAGE_NAME }}:${{ github.run_number }}
+
+    outputs:
+      build_number: ${{ github.run_number }}
+
+  deploy:
+    name: Deploy to Server
+    runs-on: ubuntu-latest
+    needs: build  # Ensure this job runs after the build job
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Create SSH key
+        run: |
+          mkdir -p ~/.ssh/
+          echo "${{ secrets.DEPLOY_KEY }}" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          ssh-keyscan -H ${{ secrets.DEPLOY_HOST }} >> ~/.ssh/known_hosts
+
+      - name: Deploy via SSH
+        run: |
+          ssh -i ~/.ssh/deploy_key ${{ secrets.DEPLOY_USERNAME }}@${{ secrets.DEPLOY_HOST }} 'bash -s ${needs.build.outputs.build_number}' < deploy.sh
