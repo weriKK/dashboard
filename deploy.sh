@@ -60,6 +60,11 @@ networks:
     driver: bridge
 EOF
 
+if [ $? -ne 0 ]; then
+  echo "Error: Docker Compose failed"
+  exit 1
+fi
+
 # Verify the container is running
 if ! docker ps | grep -q "$CONTAINER_NAME"; then
     echo "Error: Container failed to start"
@@ -70,9 +75,3 @@ fi
 
 echo "Deployment complete!" 
 
-if [[ "$1" != "" ]]; then
-    BUILD_ID="$1"
-else
-    echo ERROR: Invalid BUILD_ID argument: ["$1"] 1>&2
-    exit 1 # terminate and indicate error
-fi

@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - master
+  workflow_dispatch: # Allows the workflow to be triggered manually
 
 env:
   IMAGE_NAME: dashboard-backend
