@@ -48,4 +48,4 @@ jobs:
 
       - name: Deploy via SSH
         run: |
-          ssh -i ~/.ssh/deploy_key ${{ secrets.DEPLOY_USERNAME }}@${{ secrets.DEPLOY_HOST }} 'bash -s ${needs.build.outputs.build_number}' < deploy.sh
+          ssh -i ~/.ssh/deploy_key ${{ secrets.DEPLOY_USERNAME }}@${{ secrets.DEPLOY_HOST }} 'bash -s ${{ needs.build.outputs.build_number }}' < deploy.sh
