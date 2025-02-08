@@ -27,6 +27,13 @@ if ! validate_build_number "$BUILD_NUMBER"; then
     exit 1
 fi
 
+# Log in to docker
+echo "Docker login..."
+if ! echo "${{ secrets.WERIK_DOCKER_HUB_TOKEN }}" | docker login -u ${{ secrets.DOCKER_HUB_USERNAME }} --password-stdin >/dev/null 2>&1; then
+    echo "Error: Failed to log in to Docker Hub"
+    exit 1
+fi
+
 # Check if image exists in registry
 echo "Checking if image exists..."
 if ! docker manifest inspect $IMAGE_NAME:$BUILD_NUMBER >/dev/null 2>&1; then
