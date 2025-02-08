@@ -48,5 +48,7 @@ jobs:
           ssh-keyscan -H ${{ secrets.DEPLOY_HOST }} >> ~/.ssh/known_hosts
 
       - name: Deploy via SSH
+        env:
+          WERIK_DOCKER_HUB_TOKEN: ${{ secrets.WERIK_DOCKER_HUB_TOKEN }}
         run: |
           ssh -i ~/.ssh/deploy_key ${{ secrets.DEPLOY_USERNAME }}@${{ secrets.DEPLOY_HOST }} 'bash -s ${{ needs.build.outputs.build_number }}' < deploy.sh
