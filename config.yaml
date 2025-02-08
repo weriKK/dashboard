@@ -23,6 +23,12 @@ feeds:
     columnId: 0
     itemLimit: 8
 
+  - title: "FitGirl Repacks"
+    webLink: "https://fitgirl-repacks.site"
+    feedLink: "http://fitgirl-repacks.site/feed"
+    columnId: 0
+    itemLimit: 20  
+
   - title: "Jason Schreier"
     webLink: "https://www.bloomberg.com/authors/AUvqMRVAZCw/jason-schreier"
     feedLink: "https://www.bloomberg.com/authors/AUvqMRVAZCw/jason-schreier.rss"
