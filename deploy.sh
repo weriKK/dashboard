@@ -27,20 +27,6 @@ if ! validate_build_number "$BUILD_NUMBER"; then
     exit 1
 fi
 
-# Log in to docker
-echo "Docker login..."
-if ! docker login -u kovadocker -p $WERIK_DOCKER_HUB_TOKEN; then
-    echo "Error: Failed to log in to Docker Hub"
-    exit 1
-fi
-
-# Check if image exists in registry
-echo "Checking if image exists..."
-if ! docker manifest inspect $IMAGE_NAME:$BUILD_NUMBER >/dev/null 2>&1; then
-    echo "Error: Image $IMAGE_NAME:$BUILD_NUMBER does not exist"
-    exit 1
-fi
-
 echo "Deploying $IMAGE_NAME with build: $BUILD_NUMBER"
 
 # Pull new image
