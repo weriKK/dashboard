@@ -29,7 +29,7 @@ fi
 
 # Log in to docker
 echo "Docker login..."
-if ! echo "$WERIK_DOCKER_HUB_TOKEN" | docker login -u kovadocker --password-stdin; then
+if ! docker login -u kovadocker -p $WERIK_DOCKER_HUB_TOKEN; then
     echo "Error: Failed to log in to Docker Hub"
     exit 1
 fi
