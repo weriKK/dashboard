@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # Function to validate build number (positive integer)
 validate_build_number() {
@@ -31,13 +31,13 @@ echo "Deploying $IMAGE_NAME with build: $BUILD_NUMBER"
 
 # Pull new image
 echo "Pulling new image..."
-if ! docker pull $IMAGE_NAME:$BUILD_NUMBER; then
+if ! podman pull $IMAGE_NAME:$BUILD_NUMBER; then
     echo "Error: Failed to pull new image"
     exit 1
 fi
 
 # Create or replace the container using docker compose
-docker compose -f - up -d <<EOF
+podman compose -f - up -d <<EOF
 services:
   $CONTAINER_NAME:
     image: $IMAGE_NAME:$BUILD_NUMBER
@@ -59,10 +59,10 @@ if [ $? -ne 0 ]; then
 fi
 
 # Verify the container is running
-if ! docker ps | grep -q "$CONTAINER_NAME"; then
+if ! podman ps | grep -q "$CONTAINER_NAME"; then
     echo "Error: Container failed to start"
     echo "Checking container logs:"
-    docker logs "$CONTAINER_NAME"
+    podman logs "$CONTAINER_NAME"
     exit 1
 fi
 
