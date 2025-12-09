@@ -1,12 +1,32 @@
-# Binaries for programs and plugins
+# Go
 *.exe
 *.exe~
 *.dll
 *.so
+*.so.*
 *.dylib
+/bin/
+/vendor/
+go.sum
 
-# Test binary, build with `go test -c`
-*.test
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
 
-# Output of the go coverage tool, specifically when used with LiteIDE
-*.out
+# OS
+.DS_Store
+Thumbs.db
+
+# Configuration (DO NOT COMMIT API KEYS)
+config.yaml
+!config.example.yaml
+
+# Logs
+*.log
+
+# Dashboard-specific
+*.db
+*.sqlite
