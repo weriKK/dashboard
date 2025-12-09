@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Personal Dashboard</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div id="layout" class="layout">
+    <div class="loading">Loading dashboard...</div>
+  </div>
+
+  <!-- Hidden settings panel (Ctrl+Shift+S to toggle) -->
+  <div id="settingsPanel">
+    <h2>⚙️ Settings</h2>
+    <label for="themeSelect">Theme:</label>
+    <select id="themeSelect" class="settings-select">
+      <option value="warm-neutral">🌅 Warm Neutral</option>
+      <option value="neutral-gray">⚫ True Neutral Gray</option>
+      <option value="cool-minimal">❄️ Cool Minimal</option>
+      <option value="soft-slate">🌫️ Soft Slate</option>
+    </select>
+    <label>HMAC Secret:</label>
+    <input type="password" id="hmacInput" placeholder="Paste your HMAC secret here">
+    <div id="settingsStatus"></div>
+    <button id="saveBtnSettings">Save</button>
+    <button id="clearBtnSettings">Clear</button>
+    <button id="closeBtnSettings">Close</button>
+  </div>
+
+  <script src="scripts.js"></script>
+
+</body>
+</html>

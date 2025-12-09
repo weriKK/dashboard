@@ -1,0 +1,115 @@
+# Dashboard Configuration
+# Copy this file to config.yaml and customize for your setup
+
+# HTTP Server
+server:
+  # Server will listen on 0.0.0.0:8080
+  port: 8080
+
+# Stock Configuration (API + Symbols + Refresh)
+# Get your free Finnhub API key from https://finnhub.io/
+# Supported: Individual stocks (NASDAQ, NYSE), Currency pairs (e.g., EUR/USD)
+stocks:
+  enabled: false
+  refreshIntervalHours: 3
+  api:
+    apiKey: "YOUR_FINNHUB_API_KEY_HERE"
+    # Free tier supports 60 API calls/minute, unlimited daily
+    baseURL: "https://finnhub.io/api/v1"
+  items:
+    - symbol: "NOKIA"
+      exchange: "HEL"
+      label: "Nokia Oyj"
+    - symbol: "^GSPC"
+      label: "S&P 500"
+    - symbol: "^NDX"
+      label: "NASDAQ-100"
+    - symbol: "EUR"
+      baseCurrency: "HUF"
+      label: "HUF/EUR"
+
+# RSS Feeds Configuration
+feeds:
+  - category: "gaming"
+    color: "#fb7d44"
+    sources:
+      - name: "Reddit Games"
+        url: "https://www.reddit.com/r/Games/new.rss"
+        siteUrl: "https://www.reddit.com/r/Games"
+      - name: "MMO-Champion"
+        url: "https://www.mmo-champion.com/feeds/"
+        siteUrl: "https://www.mmo-champion.com"
+      - name: "RockPaperShotgun"
+        url: "https://www.rockpapershotgun.com/feed/"
+        siteUrl: "https://www.rockpapershotgun.com"
+      - name: "Bluesnews"
+        url: "https://www.bluesnews.com/feed/"
+        siteUrl: "https://www.bluesnews.com"
+  - category: "tech"
+    color: "#4ba6cd"
+    sources:
+      - name: "TechSpot"
+        url: "https://www.techspot.com/news/rss/"
+        siteUrl: "https://www.techspot.com"
+      - name: "ArsTechnica"
+        url: "https://arstechnica.com/feed/"
+        siteUrl: "https://arstechnica.com"
+  - category: "dev"
+    color: "#00b961"
+    sources:
+      - name: "Hacker News"
+        url: "https://news.ycombinator.com/rss"
+        siteUrl: "https://news.ycombinator.com"
+
+# Timezone Configuration
+timezones:
+  - name: "West Coast"
+    city: "Los Angeles"
+    offset: "-8"
+  - name: "East Coast"
+    city: "New York"
+    offset: "-5"
+  - name: "Bangalore, India"
+    city: "Bengaluru"
+    offset: "+5:30"
+  - name: "Japan"
+    city: "Tokyo"
+    offset: "+9"
+
+# Feed Refresh Configuration
+refresh:
+  # Default interval in minutes between checks (respects cache-control headers)
+  intervalMinutes: 15
+  # Extend this multiplier when feed returns not-modified (304)
+  notModifiedBackoffMultiplier: 2.0
+  # Maximum interval cap in minutes
+  maxIntervalMinutes: 240
+
+# Stock Data Refresh Configuration
+# Finnhub free tier: 60 requests/minute, but keep refreshes polite
+# Example cadence with 4 symbols: 3-hour interval (8 calls/day)
+stocksRefresh:
+  enabled: true
+  # Refresh interval in hours (default: 3 hours for 4 stocks = 8 requests/day)
+  refreshIntervalHours: 3
+
+# ML Ranking Configuration
+ml:
+  # Avoid filter bubbles by including random low-scored items from recent feeds
+  # Maximum age of items to consider (in hours, default 72 = 3 days)
+  maxItemAgeHours: 72
+  # Percentage of recommendation pool to fill from low-scored items (0-100)
+  diversitySamplingPercent: 20
+  # Number of top recommendations to show
+  recommendationCount: 8
+  # TF-IDF parameters
+  tfidf:
+    # Minimum document frequency (ignore very rare words)
+    minDocFreq: 1
+    # Maximum document frequency (ignore very common words)
+    maxDocFreq: 100
+  # Click feedback decay: older clicks have less influence
+  # Decay factor applied per day: influence = baseWeight * (decayFactor ^ daysSinceClick)
+  clickDecayPerDay: 0.9
+  # Base weight for a single click
+  clickWeight: 1.0

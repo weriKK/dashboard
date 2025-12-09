@@ -1,54 +1,91 @@
+# Dashboard Configuration (DO NOT COMMIT TO VERSION CONTROL)
+# This is your local configuration file with API keys
+
+# HTTP Server
+server:
+  port: 8080
+
+# Stock Configuration (API + Symbols + Refresh)
+# Get your free Finnhub API key from https://finnhub.io/
+stocks:
+  enabled: false
+  refreshIntervalHours: 3
+  api:
+    apiKey: "YOUR_FINNHUB_API_KEY_HERE"
+    baseURL: "https://finnhub.io/api/v1"
+  items:
+    - symbol: "NOK"
+      exchange: "HEL"
+      label: "Nokia Oyj"
+    - symbol: "^GSPC"
+      label: "S&P 500"
+    - symbol: "^NDX"
+      label: "NASDAQ-100"
+    - symbol: "EUR"
+      baseCurrency: "HUF"
+      label: "HUF/EUR"
+
+# RSS Feeds Configuration
 feeds:
-  - title: "MMO-Champion"
-    webLink: "https://www.mmo-champion.com"
-    feedLink: "https://www.mmo-champion.com/external.php?do=rss&type=newcontent&sectionid=1&days=120&count=20"
-    columnId: 0
-    itemLimit: 5
+  - category: "gaming"
+    color: "#fb7d44"
+    sources:
+      - name: "Reddit Games"
+        url: "https://www.reddit.com/r/Games/.rss"
+        siteUrl: "https://www.reddit.com/r/Games"
+      - name: "MMO-Champion"
+        url: "https://www.mmo-champion.com/external.php?do=rss&type=newcontent&sectionid=1&days=120&count=20"
+        siteUrl: "https://www.mmo-champion.com"
+      - name: "RockPaperShotgun"
+        url: "https://www.rockpapershotgun.com/feed/"
+        siteUrl: "https://www.rockpapershotgun.com"
+      - name: "Bluesnews"
+        url: "https://www.bluesnews.com/news/news_1_0.rdf"
+        siteUrl: "https://www.bluesnews.com"
+  - category: "tech"
+    color: "#4ba6cd"
+    sources:
+      - name: "TechSpot"
+        url: "https://www.techspot.com/backend.xml"
+        siteUrl: "https://www.techspot.com"
+      - name: "ArsTechnica"
+        url: "https://arstechnica.com/feed/"
+        siteUrl: "https://arstechnica.com"
+  - category: "dev"
+    color: "#00b961"
+    sources:
+      - name: "Hacker News"
+        url: "https://news.ycombinator.com/rss"
+        siteUrl: "https://news.ycombinator.com"
 
-  - title: "Reddit - Games"
-    webLink: "https://www.reddit.com/r/Games/"
-    feedLink: "https://www.reddit.com/r/Games/.rss"
-    columnId: 0
-    itemLimit: 12
+# Timezone Configuration
+timezones:
+  - name: "West Coast"
+    city: "Los Angeles"
+    offset: "-8"
+  - name: "East Coast"
+    city: "New York"
+    offset: "-5"
+  - name: "Bangalore, India"
+    city: "Bengaluru"
+    offset: "+5:30"
+  - name: "Japan"
+    city: "Tokyo"
+    offset: "+9"
 
-  - title: "RockPaperShotgun"
-    webLink: "https://www.rockpapershotgun.com"
-    feedLink: "https://feeds.feedburner.com/RockPaperShotgun"
-    columnId: 0
-    itemLimit: 5
+# Feed Refresh Configuration
+refresh:
+  intervalMinutes: 15
+  notModifiedBackoffMultiplier: 2.0
+  maxIntervalMinutes: 240
 
-  - title: "Bluenews"
-    webLink: "https://www.bluesnews.com"
-    feedLink: "https://www.bluesnews.com/news/news_1_0.rdf"
-    columnId: 0
-    itemLimit: 8
-
-  - title: "FitGirl Repacks"
-    webLink: "https://fitgirl-repacks.site"
-    feedLink: "http://fitgirl-repacks.site/feed"
-    columnId: 0
-    itemLimit: 20  
-
-  - title: "Jason Schreier"
-    webLink: "https://www.bloomberg.com/authors/AUvqMRVAZCw/jason-schreier"
-    feedLink: "https://www.bloomberg.com/authors/AUvqMRVAZCw/jason-schreier.rss"
-    columnId: 1
-    itemLimit: 5
-
-  - title: "Techspot"
-    webLink: "https://www.techspot.com/"
-    feedLink: "https://www.techspot.com/backend.xml"
-    columnId: 1
-    itemLimit: 20
-
-  - title: "ArsTechnica"
-    webLink: "https://arstechnica.com"
-    feedLink: "https://feeds.arstechnica.com/arstechnica/index"
-    columnId: 2
-    itemLimit: 10
-    
-  - title: "Y Combinator"
-    webLink: "https://news.ycombinator.com"
-    feedLink: "https://news.ycombinator.com/rss"
-    columnId: 2
-    itemLimit: 20
+# ML Ranking Configuration
+ml:
+  maxItemAgeHours: 72
+  diversitySamplingPercent: 20
+  recommendationCount: 8
+  tfidf:
+    minDocFreq: 1
+    maxDocFreq: 100
+  clickDecayPerDay: 0.9
+  clickWeight: 1.0
