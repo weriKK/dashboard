@@ -12,10 +12,21 @@ validate_build_number() {
 
 # Check if build number is provided
 if [ -z "$1" ]; then
-    echo "Error: Missing build number"
-    echo "Usage: ./deploy.sh <build_number>"
-    echo "Example: ./deploy.sh 1"
-    exit 1
+  echo "Error: Missing build number"
+  echo "Usage: ./deploy.sh <build_number>"
+  echo "Example: ./deploy.sh 1"
+  exit 1
+fi
+
+if [ -z "$DASHBOARD_HMAC_SECRET" ]; then
+  echo "Error: DASHBOARD_HMAC_SECRET env var is required on host before deploying"
+  exit 1
+fi
+
+if [ ! -f "config.yaml" ]; then
+  echo "Error: config.yaml not found in $(pwd)"
+  echo "Place your configuration at ./config.yaml on the host before deploying"
+  exit 1
 fi
 
 BUILD_NUMBER=$1
@@ -44,7 +55,11 @@ services:
     container_name: $CONTAINER_NAME
     restart: unless-stopped
     ports:
-      - "8888:8080"
+      - "8080:8080"
+    environment:
+      - DASHBOARD_HMAC_SECRET=${DASHBOARD_HMAC_SECRET}
+    volumes:
+      - "$(pwd)/config.yaml:/home/config.yaml:ro"
     networks:
       - mynet
 
