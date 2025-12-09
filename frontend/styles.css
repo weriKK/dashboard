@@ -484,6 +484,105 @@
       white-space: nowrap;
     }
 
+    /* Responsive adjustments */
+    @media (max-width: 1200px) {
+      .top-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .feeds-masonry {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .market-tickers,
+      .zones {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
+
+    @media (max-width: 768px) {
+      body {
+        font-size: 15px;
+      }
+
+      .layout {
+        padding: 10px;
+        gap: 10px;
+      }
+
+      /* Hide top promo cards on small screens to focus on feeds */
+      .top-grid {
+        display: none;
+      }
+
+      .feeds-masonry {
+        grid-template-columns: 1fr;
+        gap: 10px;
+      }
+
+      .feed-column {
+        gap: 10px;
+      }
+
+      .card {
+        border-radius: 12px;
+        box-shadow: 0 6px 18px rgba(0, 0, 0, 0.3);
+      }
+
+      .card-header,
+      .recs-header {
+        padding: 9px 12px;
+      }
+
+      .card-content,
+      .recs-items {
+        padding: 10px 12px;
+      }
+
+      .feed-count-select {
+        font-size: 11px;
+        padding: 3px 7px;
+      }
+
+      .drop-zone {
+        min-height: 60px;
+        font-size: 12px;
+      }
+
+      .item {
+        font-size: 14px;
+      }
+
+      .meta {
+        font-size: 10px;
+      }
+
+      /* Slightly tighter trend/ticker spacing if shown in future */
+      .market-tickers,
+      .zones {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        padding: 0 12px 10px;
+        gap: 6px;
+      }
+
+      /* Disable drag/drop affordances on mobile */
+      .drop-zone {
+        display: none;
+      }
+
+      .feed-card,
+      .feed-card .card-header {
+        cursor: default;
+      }
+
+      #themeSelector {
+        top: 10px;
+        left: auto;
+        right: 12px;
+        transform: none;
+      }
+    }
+
     /* Recommendations card */
     .recs-card {
       border: none;

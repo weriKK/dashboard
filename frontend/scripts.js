@@ -247,7 +247,7 @@
     }
 
     // Render feed card
-    function renderFeedCard(feedKey, categoryName, categoryColor, items, siteUrl, itemCount) {
+    function renderFeedCard(feedKey, categoryName, categoryColor, items, siteUrl, itemCount, isMobile = false) {
       const feedItems = items
         .slice(0, itemCount)
         .map(item => {
@@ -268,9 +268,11 @@
         })
         .join('');
 
+      const draggableAttr = isMobile ? '' : ' draggable="true"';
+
       return `
-      <div class="card feed-card" style="--accent: ${categoryColor}" data-feed-name="${feedKey}" data-column="0">
-      <div class="card-header" draggable="true">
+          <div class="card feed-card" style="--accent: ${categoryColor}" data-feed-name="${feedKey}" data-column="0">
+          <div class="card-header"${draggableAttr}>
         <div>
           ${siteUrl ? `<a class="card-link" href="${siteUrl}" target="_blank" rel="noopener noreferrer">${categoryName}</a>` : `<span>${categoryName}</span>`}
         </div>
@@ -455,6 +457,8 @@
     function renderLayout(data) {
       if (!data) return;
 
+      const isMobile = window.matchMedia('(max-width: 768px)').matches;
+
       const feedGroups = data.feeds || [];
       const colorBySource = {};
       for (const group of feedGroups) {
@@ -506,12 +510,14 @@
             const color = group.color || '#4ba6cd';
             const feedKey = group.source || name;
             const itemCount = getFeedCount(feedKey);
-            const feedHtml = renderFeedCard(feedKey, name, color, items, group.siteUrl, itemCount);
+            const feedHtml = renderFeedCard(feedKey, name, color, items, group.siteUrl, itemCount, isMobile);
             const feedWithCol = feedHtml.replace(/data-column="0"/, `data-column="${colIndex}"`);
             html += feedWithCol;
           }
         }
-        html += `<div class="drop-zone" data-column="${colIndex}">Drop here</div>`;
+        if (!isMobile) {
+          html += `<div class="drop-zone" data-column="${colIndex}">Drop here</div>`;
+        }
         html += '</div>';
       }
       html += '</div>';
@@ -587,6 +593,14 @@
     layout.addEventListener('dragover', handleFeedDragOver);
     layout.addEventListener('dragleave', handleFeedDragLeave);
     layout.addEventListener('drop', handleFeedDrop);
+
+    // Re-render on viewport change so drag/drop UI toggles with breakpoints
+    const mobileQuery = window.matchMedia('(max-width: 768px)');
+    mobileQuery.addEventListener('change', () => {
+      if (lastDashboardData) {
+        renderLayout(lastDashboardData);
+      }
+    });
 
     // Update clocks every minute (without full refresh)
     function updateClocks() {
