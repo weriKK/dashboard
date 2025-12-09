@@ -14,5 +14,6 @@ RUN apk --no-cache add ca-certificates
 
 WORKDIR /home
 COPY --from=builder /build/out/dashboard-backend .
+COPY --from=builder /build/frontend ./frontend
 
 CMD ["./dashboard-backend"]
