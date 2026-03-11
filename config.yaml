@@ -31,7 +31,7 @@ feeds:
     color: "#fb7d44"
     sources:
       - name: "Reddit Games"
-        url: "https://www.reddit.com/r/Games/.rss"
+        url: "https://old.reddit.com/r/Games/.rss"
         siteUrl: "https://www.reddit.com/r/Games"
       - name: "MMO-Champion"
         url: "https://www.mmo-champion.com/external.php?do=rss&type=newcontent&sectionid=1&days=120&count=20"
@@ -89,3 +89,4 @@ ml:
     maxDocFreq: 100
   clickDecayPerDay: 0.9
   clickWeight: 1.0
+
