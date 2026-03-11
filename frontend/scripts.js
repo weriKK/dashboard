@@ -2,29 +2,7 @@
     const API_BASE = window.location.origin;
     const FEED_COUNT_KEY = 'feedItemCounts';
     const FEED_ORDER_KEY = 'feedOrder';
-    const THEME_KEY = 'dashboardTheme';
     let lastDashboardData = null;
-
-    // Theme switching
-    function applyTheme(theme) {
-      if (theme === 'warm-neutral') {
-        document.documentElement.removeAttribute('data-theme');
-      } else {
-        document.documentElement.setAttribute('data-theme', theme);
-      }
-      localStorage.setItem(THEME_KEY, theme);
-    }
-
-    // Load saved theme on page load
-    const savedTheme = localStorage.getItem(THEME_KEY) || 'warm-neutral';
-    applyTheme(savedTheme);
-    const themeSelect = document.getElementById('themeSelect');
-    if (themeSelect) {
-      themeSelect.value = savedTheme;
-      themeSelect.addEventListener('change', (e) => {
-        applyTheme(e.target.value);
-      });
-    }
 
     // Helper: feed display preferences
     function loadFeedCountPrefs() {
@@ -90,13 +68,6 @@
       return result;
     }
 
-    // Helper: format price change
-    function formatChange(change, changePercent) {
-      const sign = change >= 0 ? '+' : '';
-      const color = change >= 0 ? '#4aa3ff' : '#ff5d5d';
-      return `<span style="color: ${color};">(${sign}${change.toFixed(2)} ${sign}${changePercent.toFixed(2)}%)</span>`;
-    }
-
     // Helper: humanize age
     function humanizeAge(isoString) {
       const date = new Date(isoString);
@@ -104,143 +75,48 @@
       const diff = now - date;
 
       const minutes = Math.floor(diff / 60000);
-      if (minutes < 60) return `${minutes}m ago`;
+      if (minutes < 60) return `${minutes}m`;
 
       const hours = Math.floor(diff / 3600000);
-      if (hours < 24) return `${hours}h ago`;
+      if (hours < 24) return `${hours}h`;
 
       const days = Math.floor(diff / 86400000);
-      return `${days}d ago`;
-    }
-
-    // Helper: get trend bars for stock data
-    function getTrendBars(count = 7) {
-      // Generate mock trend bars (in real implementation, this would come from API)
-      const bars = [];
-      for (let i = 0; i < count; i++) {
-        const height = Math.floor(Math.random() * 34) + 10;
-        const isDown = Math.random() > 0.7;
-        bars.push({ height, isDown });
-      }
-      return bars;
-    }
-
-    // Render market card
-    function renderMarketCard(stocks, timezones) {
-      const tickers = stocks
-        .map(stock => {
-          const trendBars = getTrendBars(7);
-          const barsHtml = trendBars
-            .map(
-              bar =>
-                `<div class="bar${bar.isDown ? ' down' : ''}" style="height: ${bar.height}px"></div>`
-            )
-            .join('');
-
-          return `
-        <div class="ticker">
-          <div class="ticker-title">
-            <strong>${stock.symbol}</strong>
-          </div>
-          <div class="ticker-row">
-            <div class="trend">
-              ${barsHtml}
-            </div>
-            <div class="value">
-              <div class="val">${stock.price > 0 ? stock.price.toFixed(2) : '—'}</div>
-              ${stock.price > 0 && stock.changePercent ? formatChange(stock.change, stock.changePercent) : '<div class="chg">(no data)</div>'}
-            </div>
-          </div>
-        </div>
-      `;
-        })
-        .join('');
-
-      const zonesList = (timezones || [])
-        .map(tz => {
-          if (!tz || !tz.name || !tz.city) {
-            return '';
-          }
-          // Parse offset: could be "-8", "+5:30", etc.
-          const offsetStr = String(tz.offset || '0');
-          let offsetHours = 0;
-          
-          if (offsetStr.includes(':')) {
-            const parts = offsetStr.split(':');
-            const hours = parseInt(parts[0]);
-            const mins = parseInt(parts[1]);
-            offsetHours = hours + (mins / 60) * (hours >= 0 ? 1 : -1);
-          } else {
-            offsetHours = parseFloat(offsetStr);
-          }
-          
-          const now = new Date();
-          const utcHours = now.getUTCHours();
-          const localHours = Math.floor((utcHours + offsetHours + 24) % 24);
-          const minutes = String(now.getUTCMinutes()).padStart(2, '0');
-          
-          return `
-        <div class="zone">
-          <div class="zone-title">${tz.name}</div>
-          <div class="zone-city">${tz.city} (UTC${offsetStr})</div>
-          <div class="zone-time">${String(localHours).padStart(2, '0')}:${minutes}</div>
-        </div>
-      `;
-        })
-        .filter(x => x)
-        .join('');
-
-      return `
-    <div class="card market-card">
-      <div class="card-header">
-        <span>Markets</span>
-        <span class="muted">Live data</span>
-      </div>
-      <div class="market-tickers">
-        ${tickers}
-      </div>
-      <div class="zones">
-        ${zonesList}
-      </div>
-    </div>
-  `;
+      return `${days}d`;
     }
 
     // Render recommendations card
     function renderRecommendationsCard(recommendations, colorBySource = {}) {
-      const items = recommendations
+      if (!recommendations || recommendations.length === 0) {
+        return '';
+      }
+
+      const recCards = recommendations
+        .slice(0, 12)
         .map(item => {
-          const categoryKey = item.category || item.source || item.feed || '';
-          const catColor = item.color || item.categoryColor || colorBySource[categoryKey] || '#7dc3ff';
-          const rankGrad = `linear-gradient(to bottom, ${catColor}55, ${catColor})`;
-          const sourceLabel = item.sourceName || item.source || item.category || item.feed || '';
-          const metaLabel = sourceLabel ? `${item.age} · ${sourceLabel}` : item.age;
+          const score = Math.round(item.score * 100);
+          const source = item.sourceName || item.source || item.category || item.feed || 'Unknown';
+          const age = item.age || '';
+          const sourceColor = colorBySource[source] || '#4ba6cd';
+          
           return `
-        <div class="item" style="--rankGrad: ${rankGrad}; --itemAccent: ${catColor}; --itemAccentSoft: ${catColor}26; --itemAccentStrong: ${catColor}44" data-link="${item.link}">
-          <div class="rank-bar"></div>
-          <div>
-            <a href="${item.link}" target="_blank" rel="noopener noreferrer">${item.title}</a>
-          </div>
-          <div class="meta">
-            <span>${metaLabel}</span>
-            <span class="score">${Math.round(item.score * 100)}%<div class="score-tooltip">${item.reason}</div></span>
-          </div>
+      <div class="card rec-item-card">
+        <div class="rec-item-header" style="--accent: ${sourceColor}">
+          <span class="rec-source-badge">${source}</span>
+          <span class="rec-score">${score}%</span>
         </div>
-      `;
+        <div class="rec-item-content">
+          <a href="${item.link}" target="_blank" rel="noopener noreferrer">${item.title}</a>
+          <span class="rec-item-age">${age}</span>
+        </div>
+      </div>`;
         })
         .join('');
 
       return `
-    <div class="card recs-card span-2">
-      <div class="recs-header">
-        <span>Recommended For You</span>
-        <div class="recs-actions">
-          <span class="muted">ML-ranked</span>
-          <span class="settings-icon" id="settingsIcon">⚙️</span>
-        </div>
-      </div>
-      <div class="recs-items">
-        ${items}
+    <div class="recs-section">
+      <div class="recs-title">Recommended For You</div>
+      <div class="recs-grid">
+        ${recCards}
       </div>
     </div>
   `;
@@ -252,19 +128,14 @@
         .slice(0, itemCount)
         .map(item => {
           const ageMs = new Date() - new Date(item.publishedAt);
-          const isOld = ageMs > 24 * 60 * 60 * 1000;
-          const rankGrad = `linear-gradient(to bottom, ${categoryColor}55, ${categoryColor})`;
-          return `
-        <div class="item${isOld ? ' old' : ''}" style="--rankGrad: ${rankGrad}; --itemAccent: ${categoryColor}; --itemAccentSoft: ${categoryColor}26; --itemAccentStrong: ${categoryColor}44" data-link="${item.link}">
-          <div class="rank-bar"></div>
-          <div class="item-header">
-            <div class="item-title">
-              <a href="${item.link}" target="_blank" rel="noopener noreferrer">${item.title}</a>
-            </div>
-            <span class="age">${humanizeAge(item.publishedAt)}</span>
-          </div>
-        </div>
-      `;
+          let ageClass = '';
+          if (ageMs > 24 * 60 * 60 * 1000) {
+            ageClass = ' day_old';
+          } else if (ageMs > 12 * 60 * 60 * 1000) {
+            ageClass = ' half_day_old';
+          }
+          const age = humanizeAge(item.publishedAt);
+          return `<li><a href="${item.link}" target="_blank" rel="noopener noreferrer" class="${ageClass}">${item.title}</a><span class="age">${age}</span></li>`;
         })
         .join('');
 
@@ -282,9 +153,9 @@
           </select>
         </div>
       </div>
-      <div class="card-content">
-        ${feedItems || '<div class="loading">Loading feed...</div>'}
-      </div>
+      <ul class="card-content">
+        ${feedItems || '<li class="loading">Loading feed...</li>'}
+      </ul>
     </div>
   `;
     }
@@ -292,34 +163,30 @@
     // Track clicks for ML feedback
     function trackClick(event) {
       if (event.target.tagName === 'A' && event.target.href.startsWith('http')) {
-        const item = event.target.closest('[data-link]');
-        if (item) {
-          const link = item.getAttribute('data-link');
-          // Send feedback to backend
-          (async () => {
-            const body = JSON.stringify({
-              itemTitle: event.target.textContent,
-              itemGUID: link,
-              category: 'user_click',
-            });
-            
-            const headers = { 'Content-Type': 'application/json' };
-            if (localStorage.getItem('dashboardHmacSecret')) {
-              const sig = await signRequest('POST', '/api/feedback', body);
-              if (sig) headers['X-HMAC-Signature'] = sig;
-            }
-            
-            fetch(`${API_BASE}/api/feedback`, {
-              method: 'POST',
-              headers,
-              body,
+        // Send feedback to backend
+        (async () => {
+          const body = JSON.stringify({
+            itemTitle: event.target.textContent,
+            itemGUID: event.target.href,
+            category: 'user_click',
+          });
+          
+          const headers = { 'Content-Type': 'application/json' };
+          if (localStorage.getItem('dashboardHmacSecret')) {
+            const sig = await signRequest('POST', '/api/feedback', body);
+            if (sig) headers['X-HMAC-Signature'] = sig;
+          }
+          
+          fetch(`${API_BASE}/api/feedback`, {
+            method: 'POST',
+            headers,
+            body,
+          })
+            .then(r => {
+              if (!r.ok) console.error('Feedback rejected');
             })
-              .then(r => {
-                if (!r.ok) console.error('Feedback rejected');
-              })
-              .catch(err => console.error('Feedback error'));
-          })();
-        }
+            .catch(err => console.error('Feedback error'));
+        })();
       }
     }
 
@@ -492,9 +359,8 @@
 
       let html = '';
 
-      // Top grid (market + recommendations)
+      // Top grid (recommendations)
       html += '<div class="top-grid">';
-      html += renderMarketCard(data.stocks || [], data.timezones || []);
       html += renderRecommendationsCard(data.recommendations || [], colorBySource);
       html += '</div>';
 
@@ -602,37 +468,7 @@
       }
     });
 
-    // Update clocks every minute (without full refresh)
-    function updateClocks() {
-      const zonesContainer = document.querySelector('.zones');
-      if (!zonesContainer) return;
-      
-      const zoneElements = zonesContainer.querySelectorAll('.zone');
-      zoneElements.forEach(zoneEl => {
-        const offsetStr = zoneEl.querySelector('.zone-city').textContent.match(/UTC([+\-][\d:]+)/)?.[1] || '0';
-        
-        // Parse offset
-        let offsetHours = 0;
-        if (offsetStr.includes(':')) {
-          const parts = offsetStr.split(':');
-          const hours = parseInt(parts[0]);
-          const mins = parseInt(parts[1]);
-          offsetHours = hours + (mins / 60) * (hours >= 0 ? 1 : -1);
-        } else {
-          offsetHours = parseFloat(offsetStr);
-        }
-        
-        const now = new Date();
-        const utcHours = now.getUTCHours();
-        const localHours = Math.floor((utcHours + offsetHours + 24) % 24);
-        const minutes = String(now.getUTCMinutes()).padStart(2, '0');
-        
-        const timeEl = zoneEl.querySelector('.zone-time');
-        if (timeEl) {
-          timeEl.textContent = `${String(localHours).padStart(2, '0')}:${minutes}`;
-        }
-      });
-    }
+
 
     // HMAC signing utility for protected endpoints
     const hmacSecret = localStorage.getItem('dashboardHmacSecret');
@@ -657,9 +493,6 @@
         settingsPanel.classList.toggle('visible');
         if (settingsPanel.classList.contains('visible')) {
           hmacInput.focus();
-          // sync theme select with current theme
-          const currentTheme = localStorage.getItem(THEME_KEY) || 'warm-neutral';
-          themeSelect.value = currentTheme;
         }
       }
     });
@@ -721,6 +554,3 @@
     // Initial load and auto-refresh every 5 minutes
     renderDashboard();
     setInterval(renderDashboard, 5 * 60 * 1000);
-    
-    // Update clocks every minute
-    setInterval(updateClocks, 60 * 1000);
