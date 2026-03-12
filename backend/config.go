@@ -2,7 +2,6 @@ package backend
 
 import (
 	"fmt"
-	"log"
 	"os"
 	"time"
 
@@ -18,11 +17,6 @@ func LoadConfig() error {
 
 	if err := yaml.Unmarshal(data, &Cfg); err != nil {
 		return fmt.Errorf("error parsing config.yaml: %w", err)
-	}
-
-	// Validate required fields
-	if Cfg.Stocks.API.APIKey == "" || Cfg.Stocks.API.APIKey == "YOUR_FINNHUB_API_KEY_HERE" {
-		log.Println("WARNING: Finnhub API key not configured. Stock data will not be available.")
 	}
 
 	return nil
@@ -41,6 +35,4 @@ func InitFeedCache() {
 			}
 		}
 	}
-	StockCache = make(map[string]*StockData)
-	ClickHistory = []ClickFeedback{}
 }

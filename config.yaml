@@ -5,26 +5,6 @@
 server:
   port: 8080
 
-# Stock Configuration (API + Symbols + Refresh)
-# Get your free Finnhub API key from https://finnhub.io/
-stocks:
-  enabled: false
-  refreshIntervalHours: 3
-  api:
-    apiKey: "YOUR_FINNHUB_API_KEY_HERE"
-    baseURL: "https://finnhub.io/api/v1"
-  items:
-    - symbol: "NOK"
-      exchange: "HEL"
-      label: "Nokia Oyj"
-    - symbol: "^GSPC"
-      label: "S&P 500"
-    - symbol: "^NDX"
-      label: "NASDAQ-100"
-    - symbol: "EUR"
-      baseCurrency: "HUF"
-      label: "HUF/EUR"
-
 # RSS Feeds Configuration
 feeds:
   - category: "gaming"
@@ -58,21 +38,6 @@ feeds:
         url: "https://news.ycombinator.com/rss"
         siteUrl: "https://news.ycombinator.com"
 
-# Timezone Configuration
-timezones:
-  - name: "West Coast"
-    city: "Los Angeles"
-    offset: "-8"
-  - name: "East Coast"
-    city: "New York"
-    offset: "-5"
-  - name: "Bangalore, India"
-    city: "Bengaluru"
-    offset: "+5:30"
-  - name: "Japan"
-    city: "Tokyo"
-    offset: "+9"
-
 # Feed Refresh Configuration
 refresh:
   intervalMinutes: 15
@@ -82,11 +47,7 @@ refresh:
 # ML Ranking Configuration
 ml:
   maxItemAgeHours: 72
-  diversitySamplingPercent: 20
-  recommendationCount: 8
-  tfidf:
-    minDocFreq: 1
-    maxDocFreq: 100
-  clickDecayPerDay: 0.9
   clickWeight: 1.0
-
+  tokenDecayPerDay: 0.98
+  dbPath: "data/ml_preferences.db"
+  retentionDays: 90
