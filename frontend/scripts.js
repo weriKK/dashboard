@@ -84,17 +84,23 @@
       return `${days}d`;
     }
 
-    function buildTopRatedMap(topRatedItems) {
+    function buildTopRatedMap(topRatedItems, allVisibleLinks) {
       const topRatedMap = {};
       if (!Array.isArray(topRatedItems)) return topRatedMap;
 
-      topRatedItems.slice(0, 5).forEach((item, index) => {
-        if (!item || !item.link || topRatedMap[item.link]) return;
+      // Scan ranked items until we find 5 that match visible feed items
+      let rank = 0;
+      for (let i = 0; i < topRatedItems.length && rank < 5; i++) {
+        const item = topRatedItems[i];
+        if (!item || !item.link) continue;
+        if (topRatedMap[item.link]) continue;
+        if (!allVisibleLinks.has(item.link)) continue;
+        rank++;
         topRatedMap[item.link] = {
-          rank: index + 1,
+          rank: rank,
           score: Math.round((item.score || 0) * 100),
         };
-      });
+      }
 
       return topRatedMap;
     }
@@ -143,33 +149,45 @@
   `;
     }
 
-    // Track clicks for ML feedback
+    function sendFeedback(title, link) {
+      const secret = localStorage.getItem('dashboardHmacSecret');
+      if (!secret) return;
+
+      const body = JSON.stringify({
+        itemTitle: title,
+        itemLink: link,
+        category: 'user_click',
+      });
+
+      (async () => {
+        const headers = { 'Content-Type': 'application/json' };
+        const sig = await signRequest('POST', '/api/feedback', body);
+        if (sig) headers['X-HMAC-Signature'] = sig;
+
+        fetch(`${API_BASE}/api/feedback`, {
+          method: 'POST',
+          headers,
+          body,
+          keepalive: true,
+        }).catch(() => {});
+      })();
+    }
+
+    // Track clicks for ML feedback (left-click)
     function trackClick(event) {
-      if (event.target.tagName === 'A' && event.target.href.startsWith('http')) {
-        // Send feedback to backend
-        (async () => {
-          const body = JSON.stringify({
-            itemTitle: event.target.textContent,
-            itemGUID: event.target.href,
-            category: 'user_click',
-          });
-          
-          const headers = { 'Content-Type': 'application/json' };
-          if (localStorage.getItem('dashboardHmacSecret')) {
-            const sig = await signRequest('POST', '/api/feedback', body);
-            if (sig) headers['X-HMAC-Signature'] = sig;
-          }
-          
-          fetch(`${API_BASE}/api/feedback`, {
-            method: 'POST',
-            headers,
-            body,
-          })
-            .then(r => {
-              if (!r.ok) console.error('Feedback rejected');
-            })
-            .catch(err => console.error('Feedback error'));
-        })();
+      const anchor = event.target.closest('a[href^="http"]');
+      if (anchor) {
+        sendFeedback(anchor.textContent, anchor.href);
+      }
+    }
+
+    // Track middle-click for ML feedback
+    function trackAuxClick(event) {
+      if (event.button === 1) {
+        const anchor = event.target.closest('a[href^="http"]');
+        if (anchor) {
+          sendFeedback(anchor.textContent, anchor.href);
+        }
       }
     }
 
@@ -310,10 +328,21 @@
       const isMobile = window.matchMedia('(max-width: 768px)').matches;
 
       const feedGroups = data.feeds || [];
-      const topRatedSource = Array.isArray(data.topRated) && data.topRated.length > 0
-        ? data.topRated
-        : (data.recommendations || []);
-      const topRatedMap = buildTopRatedMap(topRatedSource);
+      const topRatedItems = data.topRated || [];
+
+      // Collect all visible item links across all feeds so badge mapping
+      // can skip ranked items that aren't currently shown on screen
+      const allVisibleLinks = new Set();
+      for (const group of feedGroups) {
+        const feedKey = group.source || group.category || 'Feed';
+        const itemCount = getFeedCount(feedKey);
+        const items = group.items || [];
+        for (let i = 0; i < itemCount && i < items.length; i++) {
+          if (items[i].link) allVisibleLinks.add(items[i].link);
+        }
+      }
+
+      const topRatedMap = buildTopRatedMap(topRatedItems, allVisibleLinks);
 
       const feedOrder = normalizeFeedOrder(feedGroups);
       const columns = [[], [], []];
@@ -429,6 +458,7 @@
 
     // Event listeners (set once)
     layout.addEventListener('click', trackClick);
+    layout.addEventListener('auxclick', trackAuxClick);
     layout.addEventListener('change', handleFeedCountChange);
     layout.addEventListener('dragstart', handleFeedDragStart);
     layout.addEventListener('dragend', handleFeedDragEnd);
@@ -462,15 +492,9 @@
       hmacInput.value = hmacSecret;
     }
 
-    // Toggle settings panel by clicking settings icon
-    document.addEventListener('click', (e) => {
-      if (e.target.classList && e.target.classList.contains('settings-icon')) {
-        e.preventDefault();
-        settingsPanel.classList.toggle('visible');
-        if (settingsPanel.classList.contains('visible')) {
-          hmacInput.focus();
-        }
-      }
+    document.getElementById('settingsGear').addEventListener('click', () => {
+      settingsPanel.classList.toggle('visible');
+      if (settingsPanel.classList.contains('visible')) hmacInput.focus();
     });
 
     // Save HMAC secret

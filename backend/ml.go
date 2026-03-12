@@ -1,154 +1,42 @@
 package backend
 
 import (
-	"fmt"
-	"math"
-	"math/rand"
 	"sort"
 	"strings"
 	"time"
 )
 
-// ScoreItem calculates a TF-IDF + click-decay score for a feed item
-func ScoreItem(item *FeedItem, allItems []FeedItem) float64 {
-	words := Tokenize(item.Title)
+func ScoreItem(item *FeedItem) float64 {
+	return tokenAffinityScore(Tokenize(item.Title))
+}
 
-	// Count word frequencies across all items
-	docFreq := make(map[string]int)
-	for _, otherItem := range allItems {
-		otherWords := Tokenize(otherItem.Title)
-		uniqueWords := make(map[string]bool)
-		for _, w := range otherWords {
-			uniqueWords[w] = true
-		}
-		for w := range uniqueWords {
-			docFreq[w]++
-		}
-	}
+// tokenAffinityScore computes the dot product between an item's tokens and
+// the user's learned token preference weights. Higher means more relevant
+// to what the user has clicked before.
+func tokenAffinityScore(words []string) float64 {
+	TokenWeightMu.RLock()
+	defer TokenWeightMu.RUnlock()
 
-	// Calculate TF-IDF score
 	score := 0.0
-	wordFreq := make(map[string]int)
 	for _, w := range words {
-		wordFreq[w]++
-	}
-
-	totalDocs := float64(len(allItems))
-	for word, freq := range wordFreq {
-		df := float64(docFreq[word])
-		if df < float64(Cfg.ML.TFIDF.MinDocFreq) || df > float64(Cfg.ML.TFIDF.MaxDocFreq) {
-			continue
-		}
-
-		tf := float64(freq) / float64(len(words))
-		idf := math.Log(totalDocs / (df + 1))
-		score += tf * idf
-	}
-
-	// Add click feedback score
-	ClickHistoryMu.RLock()
-	for _, click := range ClickHistory {
-		if click.ItemTitle == item.Title {
-			// Decay based on age
-			daysSince := time.Since(click.Timestamp).Hours() / 24
-			decayFactor := math.Pow(Cfg.ML.ClickDecayPerDay, daysSince)
-			score += Cfg.ML.ClickWeight * decayFactor
+		if weight, ok := TokenWeights[w]; ok {
+			score += weight
 		}
 	}
-	ClickHistoryMu.RUnlock()
-
 	return score
 }
 
-// GetRecommendations returns ML-ranked recommendations with diversity sampling
-func GetRecommendations() []RecommendedItem {
-	allFeeds := GetAllFeeds()
-
-	// Collect all recent items
-	var allItems []FeedItem
-	maxAgeHours := time.Duration(Cfg.ML.MaxItemAgeHours) * time.Hour
-	now := time.Now()
-
-	for _, group := range allFeeds {
-		for _, item := range group.Items {
-			if now.Sub(item.PublishedAt) <= maxAgeHours {
-				allItems = append(allItems, item)
-			}
-		}
-	}
-
-	// Score all items
-	type scoredItem struct {
-		item  FeedItem
-		score float64
-	}
-
-	var scored []scoredItem
-	for _, item := range allItems {
-		score := ScoreItem(&item, allItems)
-		scored = append(scored, scoredItem{item, score})
-	}
-
-	// Sort by score
-	sort.Slice(scored, func(i, j int) bool {
-		return scored[i].score > scored[j].score
-	})
-
-	// Build recommendations with diversity sampling
-	recommendations := make([]RecommendedItem, 0) // Initialize as empty but non-nil slice
-	targetCount := Cfg.ML.RecommendationCount
-	diversityCount := (targetCount * Cfg.ML.DiversitySamplingPercent) / 100
-
-	// Take top items
-	topCount := targetCount - diversityCount
-	for i := 0; i < topCount && i < len(scored); i++ {
-		item := scored[i].item
-		recommendations = append(recommendations, RecommendedItem{
-			Title:       item.Title,
-			Link:        item.Link,
-			Age:         HumanizeAge(item.PublishedAt),
-			Source:      item.Source,
-			Description: item.Description,
-			Score:       scored[i].score,
-			Reason:      "High relevance",
-		})
-	}
-
-	// Add some lower-scored items for diversity (avoid filter bubble)
-	if len(scored) > topCount {
-		remaining := scored[topCount:]
-		// Shuffle remaining items and take some
-		rand.Seed(time.Now().UnixNano())
-		rand.Shuffle(len(remaining), func(i, j int) {
-			remaining[i], remaining[j] = remaining[j], remaining[i]
-		})
-
-		for i := 0; i < diversityCount && i < len(remaining); i++ {
-			item := remaining[i].item
-			recommendations = append(recommendations, RecommendedItem{
-				Title:       item.Title,
-				Link:        item.Link,
-				Age:         HumanizeAge(item.PublishedAt),
-				Source:      item.Source,
-				Description: item.Description,
-				Score:       remaining[i].score,
-				Reason:      "Diverse pick",
-			})
-		}
-	}
-
-	// Sort recommendations by score for final output
-	sort.Slice(recommendations, func(i, j int) bool {
-		return recommendations[i].Score > recommendations[j].Score
-	})
-
-	return recommendations
-}
-
 // GetTopRatedItems returns strict top-N scored items globally across all feeds.
-func GetTopRatedItems(limit int) []RecommendedItem {
+func GetTopRatedItems(limit int) []TopRatedItem {
 	if limit <= 0 {
-		return []RecommendedItem{}
+		return []TopRatedItem{}
+	}
+
+	TokenWeightMu.RLock()
+	hasWeights := len(TokenWeights) > 0
+	TokenWeightMu.RUnlock()
+	if !hasWeights {
+		return []TopRatedItem{}
 	}
 
 	allFeeds := GetAllFeeds()
@@ -172,8 +60,7 @@ func GetTopRatedItems(limit int) []RecommendedItem {
 
 	scored := make([]scoredItem, 0, len(allItems))
 	for _, item := range allItems {
-		score := ScoreItem(&item, allItems)
-		scored = append(scored, scoredItem{item: item, score: score})
+		scored = append(scored, scoredItem{item: item, score: ScoreItem(&item)})
 	}
 
 	sort.Slice(scored, func(i, j int) bool {
@@ -184,16 +71,11 @@ func GetTopRatedItems(limit int) []RecommendedItem {
 		scored = scored[:limit]
 	}
 
-	result := make([]RecommendedItem, 0, len(scored))
+	result := make([]TopRatedItem, 0, len(scored))
 	for _, s := range scored {
-		result = append(result, RecommendedItem{
-			Title:       s.item.Title,
-			Link:        s.item.Link,
-			Age:         HumanizeAge(s.item.PublishedAt),
-			Source:      s.item.Source,
-			Description: s.item.Description,
-			Score:       s.score,
-			Reason:      "Top rated",
+		result = append(result, TopRatedItem{
+			Link:  s.item.Link,
+			Score: s.score,
 		})
 	}
 
@@ -223,32 +105,4 @@ func Tokenize(text string) []string {
 		}
 	}
 	return filtered
-}
-
-// HumanizeAge converts a timestamp to human-readable duration
-func HumanizeAge(t time.Time) string {
-	duration := time.Since(t)
-
-	if duration < time.Minute {
-		return "now"
-	}
-	if duration < time.Hour {
-		mins := int(duration.Minutes())
-		if mins == 1 {
-			return "1m ago"
-		}
-		return fmt.Sprintf("%dm ago", mins)
-	}
-	if duration < 24*time.Hour {
-		hours := int(duration.Hours())
-		if hours == 1 {
-			return "1h ago"
-		}
-		return fmt.Sprintf("%dh ago", hours)
-	}
-	days := int(duration.Hours() / 24)
-	if days == 1 {
-		return "1d ago"
-	}
-	return fmt.Sprintf("%dd ago", days)
 }

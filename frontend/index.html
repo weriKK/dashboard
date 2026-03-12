@@ -11,15 +11,17 @@
     <div class="loading">Loading dashboard...</div>
   </div>
 
-  <!-- Hidden settings panel (Ctrl+Shift+S to toggle) -->
+  <button id="settingsGear" title="Settings" aria-label="Settings">⚙</button>
+
   <div id="settingsPanel">
-    <h2>⚙️ Settings</h2>
-    <label>HMAC Secret:</label>
-    <input type="password" id="hmacInput" placeholder="Paste your HMAC secret here">
+    <label for="hmacInput">HMAC Secret</label>
+    <input type="password" id="hmacInput" placeholder="Paste secret here" spellcheck="false">
     <div id="settingsStatus"></div>
-    <button id="saveBtnSettings">Save</button>
-    <button id="clearBtnSettings">Clear</button>
-    <button id="closeBtnSettings">Close</button>
+    <div class="settings-actions">
+      <button id="saveBtnSettings">Save</button>
+      <button id="clearBtnSettings">Clear</button>
+      <button id="closeBtnSettings">Close</button>
+    </div>
   </div>
 
   <script src="scripts.js"></script>

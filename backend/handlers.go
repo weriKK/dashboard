@@ -24,69 +24,6 @@ func CORSMiddleware(next http.Handler) http.Handler {
 	})
 }
 
-// HandleGetFeeds returns all feeds
-func HandleGetFeeds(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodGet {
-		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-		return
-	}
-
-	feeds := GetAllFeeds()
-	w.Header().Set("Content-Type", "application/json")
-	w.Header().Set("Cache-Control", "no-cache, max-age=60")
-	json.NewEncoder(w).Encode(feeds)
-}
-
-// HandleGetStocks returns cached stock data
-func HandleGetStocks(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodGet {
-		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-		return
-	}
-
-	StockCacheMu.RLock()
-	defer StockCacheMu.RUnlock()
-
-	var stocks []StockData
-	for _, stockConfig := range Cfg.Stocks.Items {
-		if data, ok := StockCache[stockConfig.Symbol]; ok {
-			stocks = append(stocks, *data)
-		} else {
-			stocks = append(stocks, StockData{
-				Symbol:    stockConfig.Symbol,
-				Label:     stockConfig.Label,
-				UpdatedAt: time.Now(),
-			})
-		}
-	}
-
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(stocks)
-}
-
-// HandleGetRecommendations returns ML-ranked recommendations
-func HandleGetRecommendations(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodGet {
-		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-		return
-	}
-
-	recommendations := GetRecommendations()
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(recommendations)
-}
-
-// HandleGetTimezones returns configured timezones
-func HandleGetTimezones(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodGet {
-		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-		return
-	}
-
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(Cfg.Timezones)
-}
-
 // HandleDashboard returns the complete dashboard data
 func HandleDashboard(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
@@ -95,34 +32,11 @@ func HandleDashboard(w http.ResponseWriter, r *http.Request) {
 	}
 
 	feeds := GetAllFeeds()
-
-	StockCacheMu.RLock()
-	var stocks []StockData
-	for _, stockConfig := range Cfg.Stocks.Items {
-		if data, ok := StockCache[stockConfig.Symbol]; ok {
-			stocks = append(stocks, *data)
-		} else {
-			// Return empty stock data if not yet fetched
-			stocks = append(stocks, StockData{
-				Symbol:    stockConfig.Symbol,
-				Label:     stockConfig.Label,
-				Price:     0,
-				UpdatedAt: time.Now(),
-			})
-		}
-	}
-	StockCacheMu.RUnlock()
-
-	recommendations := GetRecommendations()
-	topRated := GetTopRatedItems(5)
+	topRated := GetTopRatedItems(25)
 
 	response := APIResponse{
-		Feeds:           feeds,
-		Stocks:          stocks,
-		Recommendations: recommendations,
-		TopRated:        topRated,
-		Timezones:       Cfg.Timezones,
-		CurrentTime:     time.Now(),
+		Feeds:    feeds,
+		TopRated: topRated,
 	}
 
 	w.Header().Set("Content-Type", "application/json")
@@ -145,9 +59,16 @@ func HandleClickFeedback(w http.ResponseWriter, r *http.Request) {
 
 	feedback.Timestamp = time.Now()
 
-	ClickHistoryMu.Lock()
-	ClickHistory = append(ClickHistory, feedback)
-	ClickHistoryMu.Unlock()
+	// Build a stable identity key: prefer link, fall back to title
+	if feedback.ItemLink != "" {
+		feedback.ItemKey = feedback.ItemLink
+	} else {
+		feedback.ItemKey = feedback.ItemTitle
+	}
+
+	if err := SaveClickEvent(feedback); err != nil {
+		log.Printf("Failed to persist click feedback: %v", err)
+	}
 
 	log.Printf("Recorded click feedback: %s", feedback.ItemTitle)
 

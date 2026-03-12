@@ -47,6 +47,13 @@ if ! docker pull $IMAGE_NAME:$BUILD_NUMBER; then
     exit 1
 fi
 
+# Ensure host data directory exists for database volume
+DATA_DIR="$(pwd)/data"
+if [ ! -d "$DATA_DIR" ]; then
+  echo "Creating data directory at $DATA_DIR"
+  mkdir -p "$DATA_DIR"
+fi
+
 # Create or replace the container using docker compose
 docker compose -f - up -d <<EOF
 services:
@@ -60,6 +67,7 @@ services:
       - DASHBOARD_HMAC_SECRET=${DASHBOARD_HMAC_SECRET}
     volumes:
       - "$(pwd)/config.yaml:/home/config.yaml:ro"
+      - "$(pwd)/data:/home/data"
     networks:
       - mynet
 

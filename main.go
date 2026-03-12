@@ -6,6 +6,8 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"os"
+	"path/filepath"
 )
 
 func main() {
@@ -20,12 +22,34 @@ func main() {
 	// Initialize caches
 	backend.InitFeedCache()
 
+	// Initialize SQLite store for ML persistence
+	dbPath := backend.Cfg.ML.DBPath
+	if dbPath == "" {
+		dbPath = "data/ml_preferences.db"
+	}
+	if err := os.MkdirAll(filepath.Dir(dbPath), 0755); err != nil {
+		log.Fatalf("Failed to create data directory: %v", err)
+	}
+	if err := backend.OpenStore(dbPath); err != nil {
+		log.Fatalf("Failed to open store: %v", err)
+	}
+	defer backend.CloseStore()
+
+	if err := backend.PruneOldEvents(backend.Cfg.ML.RetentionDays); err != nil {
+		log.Printf("Warning: failed to prune old events: %v", err)
+	}
+	if err := backend.LoadTokenWeights(); err != nil {
+		log.Fatalf("Failed to load token weights: %v", err)
+	}
+	if err := backend.ApplyTokenDecay(); err != nil {
+		log.Printf("Warning: failed to apply token decay: %v", err)
+	}
+
 	// Start background workers
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
 	go backend.RefreshFeedsWorker(ctx)
-	go backend.RefreshStockWorker(ctx)
 
 	// Initial feed fetch
 	for _, category := range backend.Cfg.Feeds {
@@ -48,11 +72,7 @@ func main() {
 	// Read endpoints: 300 requests/minute per IP
 	// Write endpoints: 120 requests/minute per IP
 
-	mux.Handle("/api/feeds", backend.RateLimitMiddleware(http.HandlerFunc(backend.HandleGetFeeds), 300))
-	mux.Handle("/api/stocks", backend.RateLimitMiddleware(http.HandlerFunc(backend.HandleGetStocks), 300))
-	mux.Handle("/api/timezones", backend.RateLimitMiddleware(http.HandlerFunc(backend.HandleGetTimezones), 300))
 	mux.Handle("/api/dashboard", backend.RateLimitMiddleware(http.HandlerFunc(backend.HandleDashboard), 300))
-	mux.Handle("/api/recommendations", backend.RateLimitMiddleware(http.HandlerFunc(backend.HandleGetRecommendations), 300))
 	// HMAC-protected write endpoint (mandatory)
 	feedbackHandler := backend.RequireHMACAuth(
 		backend.MaxBodySizeMiddleware(http.HandlerFunc(backend.HandleClickFeedback), 1024*10),

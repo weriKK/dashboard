@@ -124,7 +124,7 @@
     /* Card base styles */
     .card {
       background: #2a2a2f;
-      border: 1px solid rgba(75, 166, 205, 0.2);
+      border: none;
       box-shadow: none;
       border-radius: 6px;
       display: flex;
@@ -175,7 +175,7 @@
       align-items: center;
       padding: 6px 14px;
       cursor: grab;
-      border-bottom: 1px solid rgba(75, 166, 205, 0.2);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
       background: #24262c;
       gap: 10px;
     }
@@ -212,20 +212,19 @@
 
     .feed-count-select {
       background: #2a2a2f;
-      border: 1px solid rgba(75, 166, 205, 0.2);
+      border: 1px solid rgba(255, 255, 255, 0.08);
       color: #ffffff;
       font-size: 12px;
       border-radius: 4px;
       padding: 4px 8px;
       outline: none;
       opacity: 0.85;
-      transition: opacity 0.2s ease, border-color 0.2s ease;
+      transition: opacity 0.2s ease;
     }
 
     .feed-count-select:hover,
     .feed-count-select:focus {
       opacity: 1;
-      border-color: rgba(75, 166, 205, 0.3);
     }
 
     .feed-count-select option {
@@ -233,96 +232,98 @@
       color: #ffffff;
     }
 
-    /* Hidden settings panel */
+    #settingsGear {
+      position: fixed;
+      bottom: 14px;
+      right: 14px;
+      background: none;
+      border: none;
+      color: #ffffff;
+      font-size: 20px;
+      opacity: 0.15;
+      cursor: pointer;
+      padding: 4px;
+      line-height: 1;
+      transition: opacity 0.2s ease;
+      z-index: 999;
+    }
+
+    #settingsGear:hover {
+      opacity: 0.6;
+    }
+
     #settingsPanel {
       position: fixed;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      background: #33363d;
+      bottom: 44px;
+      right: 14px;
+      background: #1a1a1f;
       border: 1px solid rgba(255, 255, 255, 0.08);
       border-radius: 6px;
-      padding: 24px;
+      padding: 16px;
       z-index: 9999;
-      max-width: 400px;
-      box-shadow: none;
+      width: 480px;
+      max-width: calc(100vw - 28px);
       display: none;
+      font-family: var(--font-family);
     }
 
     #settingsPanel.visible {
       display: block;
     }
 
-    #settingsPanel h2 {
-      margin: 0 0 16px 0;
-      color: #ffffff;
-      font-size: 16px;
-    }
-
     #settingsPanel label {
       display: block;
-      margin-bottom: 12px;
-      color: #ececec;
-      font-size: 16px;
+      margin-bottom: 8px;
+      color: #9e9e9e;
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+      font-weight: 600;
     }
 
     #settingsPanel input {
       width: 100%;
-      padding: 8px 12px;
-      background: rgba(0, 0, 0, 0.15);
-      border: 1px solid rgba(255, 255, 255, 0.06);
+      padding: 8px 10px;
+      background: #2a2a2f;
+      border: 1px solid rgba(255, 255, 255, 0.08);
       border-radius: 4px;
       color: #ffffff;
       font-family: monospace;
-      font-size: 16px;
+      font-size: 13px;
       box-sizing: border-box;
-    }
-
-    #settingsPanel select.settings-select {
-      width: 100%;
-      padding: 8px 12px;
-      background: rgba(0, 0, 0, 0.15);
-      border: 1px solid rgba(255, 255, 255, 0.06);
-      border-radius: 4px;
-      color: #ffffff;
-      font-family: inherit;
-      font-size: 16px;
-      box-sizing: border-box;
-    }
-
-    #settingsPanel select.settings-select:focus {
-      outline: none;
-      border-color: #4ba6cd;
-      box-shadow: none;
     }
 
     #settingsPanel input:focus {
       outline: none;
-      border-color: #4ba6cd;
-      box-shadow: none;
+      border-color: rgba(255, 255, 255, 0.2);
+    }
+
+    .settings-actions {
+      display: flex;
+      gap: 8px;
+      margin-top: 12px;
     }
 
     #settingsPanel button {
-      margin-right: 8px;
-      margin-top: 16px;
-      padding: 8px 16px;
-      background: rgba(75, 166, 205, 0.15);
-      border: 1px solid rgba(75, 166, 205, 0.3);
+      padding: 6px 14px;
+      background: #2a2a2f;
+      border: 1px solid rgba(255, 255, 255, 0.08);
       border-radius: 4px;
-      color: #ececec;
+      color: #b8d4e8;
       cursor: pointer;
-      font-size: 16px;
+      font-size: 13px;
+      font-family: var(--font-family);
+      transition: background 0.15s ease;
     }
 
     #settingsPanel button:hover {
-      background: rgba(75, 166, 205, 0.25);
-      border-color: #4ba6cd;
+      background: #33363d;
     }
 
     #settingsStatus {
-      margin-top: 12px;
-      font-size: 16px;
-      color: #9ee7ff;
+      margin-top: 8px;
+      font-size: 13px;
+      min-height: 1.2em;
     }
 
     .card-header::before {
@@ -359,7 +360,7 @@
       margin: 0;
       display: flex;
       justify-content: space-between;
-      align-items: center;
+      align-items: baseline;
       gap: 6px;
     }
 
@@ -391,7 +392,7 @@
       position: absolute;
       left: 8px;
       top: 2px;
-      line-height: 1.2;
+      line-height: inherit;
     }
 
     .card-content a:hover {
