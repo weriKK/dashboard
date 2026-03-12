@@ -84,46 +84,23 @@
       return `${days}d`;
     }
 
-    // Render recommendations card
-    function renderRecommendationsCard(recommendations, colorBySource = {}) {
-      if (!recommendations || recommendations.length === 0) {
-        return '';
-      }
+    function buildTopRatedMap(topRatedItems) {
+      const topRatedMap = {};
+      if (!Array.isArray(topRatedItems)) return topRatedMap;
 
-      const recCards = recommendations
-        .slice(0, 12)
-        .map(item => {
-          const score = Math.round(item.score * 100);
-          const source = item.sourceName || item.source || item.category || item.feed || 'Unknown';
-          const age = item.age || '';
-          const sourceColor = colorBySource[source] || '#4ba6cd';
-          
-          return `
-      <div class="card rec-item-card">
-        <div class="rec-item-header" style="--accent: ${sourceColor}">
-          <span class="rec-source-badge">${source}</span>
-          <span class="rec-score">${score}%</span>
-        </div>
-        <div class="rec-item-content">
-          <a href="${item.link}" target="_blank" rel="noopener noreferrer">${item.title}</a>
-          <span class="rec-item-age">${age}</span>
-        </div>
-      </div>`;
-        })
-        .join('');
+      topRatedItems.slice(0, 5).forEach((item, index) => {
+        if (!item || !item.link || topRatedMap[item.link]) return;
+        topRatedMap[item.link] = {
+          rank: index + 1,
+          score: Math.round((item.score || 0) * 100),
+        };
+      });
 
-      return `
-    <div class="recs-section">
-      <div class="recs-title">Recommended For You</div>
-      <div class="recs-grid">
-        ${recCards}
-      </div>
-    </div>
-  `;
+      return topRatedMap;
     }
 
     // Render feed card
-    function renderFeedCard(feedKey, categoryName, categoryColor, items, siteUrl, itemCount, isMobile = false) {
+    function renderFeedCard(feedKey, categoryName, categoryColor, items, siteUrl, itemCount, isMobile = false, topRatedMap = {}) {
       const feedItems = items
         .slice(0, itemCount)
         .map(item => {
@@ -135,7 +112,12 @@
             ageClass = ' half_day_old';
           }
           const age = humanizeAge(item.publishedAt);
-          return `<li><a href="${item.link}" target="_blank" rel="noopener noreferrer" class="${ageClass}">${item.title}</a><span class="age">${age}</span></li>`;
+          const topRated = topRatedMap[item.link];
+          const topRatedClass = topRated ? ' top-rated-item' : '';
+          const topRatedBadge = topRated
+            ? `<span class="top-rated-badge" title="Top ${topRated.rank} rated · ${topRated.score}%">Top ${topRated.rank}</span>`
+            : '';
+          return `<li class="${topRatedClass.trim()}"><a href="${item.link}" target="_blank" rel="noopener noreferrer" class="${ageClass}">${item.title}</a><div class="item-meta-right">${topRatedBadge}<span class="age">${age}</span></div></li>`;
         })
         .join('');
 
@@ -143,9 +125,10 @@
 
       return `
           <div class="card feed-card" style="--accent: ${categoryColor}" data-feed-name="${feedKey}" data-column="0">
-          <div class="card-header"${draggableAttr}>
+          <div class="feed-topline"></div>
+          <div class="feed-titlebar"${draggableAttr}>
         <div>
-          ${siteUrl ? `<a class="card-link" href="${siteUrl}" target="_blank" rel="noopener noreferrer">${categoryName}</a>` : `<span>${categoryName}</span>`}
+          ${siteUrl ? `<a class="card-link feed-title-label" href="${siteUrl}" target="_blank" rel="noopener noreferrer">${categoryName}</a>` : `<span class="feed-title-label">${categoryName}</span>`}
         </div>
         <div>
           <select class="feed-count-select" data-feed-key="${feedKey}">
@@ -218,7 +201,7 @@
     }
 
     function handleFeedDragStart(event) {
-      const header = event.target.closest('.card-header');
+      const header = event.target.closest('.feed-titlebar');
       if (!header) return;
       const card = header.closest('.feed-card');
       if (!card) return;
@@ -327,12 +310,10 @@
       const isMobile = window.matchMedia('(max-width: 768px)').matches;
 
       const feedGroups = data.feeds || [];
-      const colorBySource = {};
-      for (const group of feedGroups) {
-        const name = group.source || group.category || 'Feed';
-        const color = group.color || '#4ba6cd';
-        colorBySource[name] = color;
-      }
+      const topRatedSource = Array.isArray(data.topRated) && data.topRated.length > 0
+        ? data.topRated
+        : (data.recommendations || []);
+      const topRatedMap = buildTopRatedMap(topRatedSource);
 
       const feedOrder = normalizeFeedOrder(feedGroups);
       const columns = [[], [], []];
@@ -359,11 +340,6 @@
 
       let html = '';
 
-      // Top grid (recommendations)
-      html += '<div class="top-grid">';
-      html += renderRecommendationsCard(data.recommendations || [], colorBySource);
-      html += '</div>';
-
       // Feed cards organized by column with drop-zones
       html += '<div class="feeds-masonry">';
       for (let colIndex = 0; colIndex < 3; colIndex++) {
@@ -376,7 +352,7 @@
             const color = group.color || '#4ba6cd';
             const feedKey = group.source || name;
             const itemCount = getFeedCount(feedKey);
-            const feedHtml = renderFeedCard(feedKey, name, color, items, group.siteUrl, itemCount, isMobile);
+            const feedHtml = renderFeedCard(feedKey, name, color, items, group.siteUrl, itemCount, isMobile, topRatedMap);
             const feedWithCol = feedHtml.replace(/data-column="0"/, `data-column="${colIndex}"`);
             html += feedWithCol;
           }

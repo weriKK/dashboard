@@ -109,18 +109,20 @@ type FeedGroup struct {
 }
 
 type RecommendedItem struct {
-	Title  string  `json:"title"`
-	Link   string  `json:"link"`
-	Age    string  `json:"age"`
-	Source string  `json:"source"`
-	Score  float64 `json:"score"`
-	Reason string  `json:"reason"`
+	Title       string  `json:"title"`
+	Link        string  `json:"link"`
+	Age         string  `json:"age"`
+	Source      string  `json:"source"`
+	Description string  `json:"description"`
+	Score       float64 `json:"score"`
+	Reason      string  `json:"reason"`
 }
 
 type APIResponse struct {
 	Feeds           []FeedGroup       `json:"feeds"`
 	Stocks          []StockData       `json:"stocks"`
 	Recommendations []RecommendedItem `json:"recommendations"`
+	TopRated        []RecommendedItem `json:"topRated"`
 	Timezones       []TimezoneConfig  `json:"timezones"`
 	CurrentTime     time.Time         `json:"currentTime"`
 }

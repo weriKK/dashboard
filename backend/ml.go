@@ -104,12 +104,13 @@ func GetRecommendations() []RecommendedItem {
 	for i := 0; i < topCount && i < len(scored); i++ {
 		item := scored[i].item
 		recommendations = append(recommendations, RecommendedItem{
-			Title:  item.Title,
-			Link:   item.Link,
-			Age:    HumanizeAge(item.PublishedAt),
-			Source: item.Source,
-			Score:  scored[i].score,
-			Reason: "High relevance",
+			Title:       item.Title,
+			Link:        item.Link,
+			Age:         HumanizeAge(item.PublishedAt),
+			Source:      item.Source,
+			Description: item.Description,
+			Score:       scored[i].score,
+			Reason:      "High relevance",
 		})
 	}
 
@@ -125,12 +126,13 @@ func GetRecommendations() []RecommendedItem {
 		for i := 0; i < diversityCount && i < len(remaining); i++ {
 			item := remaining[i].item
 			recommendations = append(recommendations, RecommendedItem{
-				Title:  item.Title,
-				Link:   item.Link,
-				Age:    HumanizeAge(item.PublishedAt),
-				Source: item.Source,
-				Score:  remaining[i].score,
-				Reason: "Diverse pick",
+				Title:       item.Title,
+				Link:        item.Link,
+				Age:         HumanizeAge(item.PublishedAt),
+				Source:      item.Source,
+				Description: item.Description,
+				Score:       remaining[i].score,
+				Reason:      "Diverse pick",
 			})
 		}
 	}
@@ -141,6 +143,61 @@ func GetRecommendations() []RecommendedItem {
 	})
 
 	return recommendations
+}
+
+// GetTopRatedItems returns strict top-N scored items globally across all feeds.
+func GetTopRatedItems(limit int) []RecommendedItem {
+	if limit <= 0 {
+		return []RecommendedItem{}
+	}
+
+	allFeeds := GetAllFeeds()
+
+	var allItems []FeedItem
+	maxAgeHours := time.Duration(Cfg.ML.MaxItemAgeHours) * time.Hour
+	now := time.Now()
+
+	for _, group := range allFeeds {
+		for _, item := range group.Items {
+			if now.Sub(item.PublishedAt) <= maxAgeHours {
+				allItems = append(allItems, item)
+			}
+		}
+	}
+
+	type scoredItem struct {
+		item  FeedItem
+		score float64
+	}
+
+	scored := make([]scoredItem, 0, len(allItems))
+	for _, item := range allItems {
+		score := ScoreItem(&item, allItems)
+		scored = append(scored, scoredItem{item: item, score: score})
+	}
+
+	sort.Slice(scored, func(i, j int) bool {
+		return scored[i].score > scored[j].score
+	})
+
+	if len(scored) > limit {
+		scored = scored[:limit]
+	}
+
+	result := make([]RecommendedItem, 0, len(scored))
+	for _, s := range scored {
+		result = append(result, RecommendedItem{
+			Title:       s.item.Title,
+			Link:        s.item.Link,
+			Age:         HumanizeAge(s.item.PublishedAt),
+			Source:      s.item.Source,
+			Description: s.item.Description,
+			Score:       s.score,
+			Reason:      "Top rated",
+		})
+	}
+
+	return result
 }
 
 // Tokenize splits text into meaningful words

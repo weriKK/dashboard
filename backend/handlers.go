@@ -114,11 +114,13 @@ func HandleDashboard(w http.ResponseWriter, r *http.Request) {
 	StockCacheMu.RUnlock()
 
 	recommendations := GetRecommendations()
+	topRated := GetTopRatedItems(5)
 
 	response := APIResponse{
 		Feeds:           feeds,
 		Stocks:          stocks,
 		Recommendations: recommendations,
+		TopRated:        topRated,
 		Timezones:       Cfg.Timezones,
 		CurrentTime:     time.Now(),
 	}
