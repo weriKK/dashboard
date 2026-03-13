@@ -2,22 +2,48 @@ package backend
 
 import (
 	"context"
+	"crypto/tls"
 	"fmt"
 	"log"
 	"net/http"
+	"net/url"
 	"sort"
+	"strings"
 	"time"
 
 	"github.com/mmcdole/gofeed"
 )
 
+var (
+	defaultFeedClient = &http.Client{Timeout: 20 * time.Second}
+	redditFeedClient  = &http.Client{
+		Timeout: 20 * time.Second,
+		Transport: &http.Transport{
+			ForceAttemptHTTP2: false,
+			TLSNextProto:      map[string]func(string, *tls.Conn) http.RoundTripper{},
+		},
+	}
+)
+
+func isRedditFeedURL(rawURL string) bool {
+	parsed, err := url.Parse(rawURL)
+	if err != nil {
+		return false
+	}
+
+	return strings.HasSuffix(strings.ToLower(parsed.Hostname()), "reddit.com")
+}
+
 // FetchFeed retrieves and parses an RSS feed with conditional request headers and retries
 func FetchFeed(ctx context.Context, source FeedSource, category string) (*FeedCacheEntry, error) {
 	cacheKey := fmt.Sprintf("%s:%s", category, source.Name)
 	entry := FeedCache[cacheKey]
+	client := defaultFeedClient
+	if isRedditFeedURL(source.URL) {
+		client = redditFeedClient
+	}
 
 	backoffs := []time.Duration{1 * time.Second, 3 * time.Second, 9 * time.Second}
-	client := &http.Client{Timeout: 20 * time.Second}
 
 	var lastErr error
 	for attempt := 0; attempt < len(backoffs); attempt++ {
@@ -36,6 +62,8 @@ func FetchFeed(ctx context.Context, source FeedSource, category string) (*FeedCa
 
 		// Browser-like user agent to reduce blocks
 		req.Header.Set("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0 Safari/537.36")
+		req.Header.Set("Accept", "application/atom+xml,application/rss+xml,application/xml,text/xml;q=0.9,*/*;q=0.8")
+		req.Header.Set("Accept-Language", "en-US,en;q=0.9")
 
 		resp, err := client.Do(req)
 		if err != nil {
