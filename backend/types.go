@@ -73,6 +73,7 @@ type TopRatedItem struct {
 type APIResponse struct {
 	Feeds    []FeedGroup    `json:"feeds"`
 	TopRated []TopRatedItem `json:"topRated"`
+	Version  string         `json:"version,omitempty"`
 }
 
 type ClickFeedback struct {
@@ -99,4 +100,5 @@ var (
 	FeedCache   map[string]*FeedCacheEntry
 	FeedCacheMu sync.RWMutex
 	Cfg         Config
+	AppVersion  string
 )

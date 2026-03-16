@@ -8,6 +8,17 @@ import (
 	"time"
 )
 
+// topRatedDashboardLimit controls how many globally ranked candidates are sent
+// to the frontend for TOP badge mapping.
+//
+// Why this is intentionally larger than the visible TOP badge count:
+//   - The frontend only highlights a small number of visible items (currently 3).
+//   - Many highest-ranked items can be "hidden" from view because each feed column
+//     is truncated by user-selected item count.
+//   - Sending a larger candidate pool lets the frontend skip hidden links and still
+//     find enough visible matches to fill the badge quota.
+const topRatedDashboardLimit = 25
+
 // CORSMiddleware adds CORS headers to all responses
 func CORSMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -32,11 +43,12 @@ func HandleDashboard(w http.ResponseWriter, r *http.Request) {
 	}
 
 	feeds := GetAllFeeds()
-	topRated := GetTopRatedItems(25)
+	topRated := GetTopRatedItems(topRatedDashboardLimit)
 
 	response := APIResponse{
 		Feeds:    feeds,
 		TopRated: topRated,
+		Version:  AppVersion,
 	}
 
 	w.Header().Set("Content-Type", "application/json")

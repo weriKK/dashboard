@@ -248,6 +248,25 @@
       z-index: 999;
     }
 
+    #versionBadge {
+      position: fixed;
+      bottom: 14px;
+      right: 42px;
+      color: #ffffff;
+      font-size: 11px;
+      font-weight: 400;
+      letter-spacing: 0.02em;
+      opacity: 0.15;
+      line-height: 1;
+      z-index: 999;
+      user-select: none;
+      pointer-events: none;
+    }
+
+    #versionBadge:hover {
+      opacity: 0.45;
+    }
+
     #settingsGear:hover {
       opacity: 0.6;
     }

@@ -1,8 +1,17 @@
     // Configuration
     const API_BASE = window.location.origin;
+    const TOP_HITS_LIMIT = 3;
     const FEED_COUNT_KEY = 'feedItemCounts';
     const FEED_ORDER_KEY = 'feedOrder';
+    const versionBadge = document.getElementById('versionBadge');
     let lastDashboardData = null;
+
+    function renderVersionBadge(version) {
+      if (!versionBadge) return;
+      const normalized = (typeof version === 'string' && version.trim()) ? version.trim() : 'v?';
+      versionBadge.textContent = normalized;
+      versionBadge.title = `Deployed version: ${normalized}`;
+    }
 
     // Helper: feed display preferences
     function loadFeedCountPrefs() {
@@ -88,9 +97,9 @@
       const topRatedMap = {};
       if (!Array.isArray(topRatedItems)) return topRatedMap;
 
-      // Scan ranked items until we find 5 that match visible feed items
+      // Scan ranked items until we find TOP_HITS_LIMIT that match visible feed items
       let rank = 0;
-      for (let i = 0; i < topRatedItems.length && rank < 5; i++) {
+      for (let i = 0; i < topRatedItems.length && rank < TOP_HITS_LIMIT; i++) {
         const item = topRatedItems[i];
         if (!item || !item.link) continue;
         if (topRatedMap[item.link]) continue;
@@ -410,6 +419,7 @@
         const data = await response.json();
 
         lastDashboardData = data;
+        renderVersionBadge(data.version);
         renderLayout(data);
         
         // Remove any existing error overlay on success
@@ -552,5 +562,6 @@
     }
 
     // Initial load and auto-refresh every 5 minutes
+    renderVersionBadge('');
     renderDashboard();
     setInterval(renderDashboard, 5 * 60 * 1000);

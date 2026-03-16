@@ -38,7 +38,14 @@ if ! validate_build_number "$BUILD_NUMBER"; then
     exit 1
 fi
 
+GIT_SHA=$(git rev-parse --short=7 HEAD 2>/dev/null || true)
+if [ -z "$GIT_SHA" ]; then
+  GIT_SHA="unknown"
+fi
+DASHBOARD_VERSION="v${BUILD_NUMBER}-${GIT_SHA}"
+
 echo "Deploying $IMAGE_NAME with build: $BUILD_NUMBER"
+echo "Dashboard version: $DASHBOARD_VERSION"
 
 # Pull new image
 echo "Pulling new image..."
@@ -65,6 +72,7 @@ services:
       - "8080:8080"
     environment:
       - DASHBOARD_HMAC_SECRET=${DASHBOARD_HMAC_SECRET}
+      - DASHBOARD_VERSION=${DASHBOARD_VERSION}
     volumes:
       - "$(pwd)/config.yaml:/home/config.yaml:ro"
       - "$(pwd)/data:/home/data"

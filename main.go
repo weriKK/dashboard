@@ -11,6 +11,8 @@ import (
 )
 
 func main() {
+	backend.AppVersion = os.Getenv("DASHBOARD_VERSION")
+
 	// Load configuration
 	if err := backend.LoadConfig(); err != nil {
 		log.Fatalf("Failed to load configuration: %v", err)
